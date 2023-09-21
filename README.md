@@ -4,3 +4,17 @@ ArchaeoPyDating is a Python tool designed for archaeomagnetic dating. This tool 
 - **Python Module:** For users with programming skills or those seeking a more in-depth and flexible analysis. You can import this module into your Python scripts for more complex studies, automation, and integration with other libraries. It’s also compatible with notebooks for comprehensive coding studies.
 
 This repository contains a [Jupiter Notebook](APD_example.ipynb) showing examples of the module's use
+
+##  Citation ##
+
+## Installation ##
+
+##  Documentation ##
+
+
+## Contact ##
+Mario Serrano Sánchez-Bravo  
+Dpto. Física de la Tierra y Astrofísica. Facultad de Ciencias Físicas.  
+Universidad Complutense de Madrid (UCM)  
+marioser@ucm.es  
+
