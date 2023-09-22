@@ -9,10 +9,37 @@ ArchaeoPyDating is a Python tool designed for archaeomagnetic dating. This tool 
 
 ## Installation ##
 
+Follow these steps to install and use the ArchaeoPyDating module (please, ensure you have Python and pip installed on your system):
+
+1. **Clone the repository**: Open your terminal, create a new directory or navigate to a desired one, and run the following command:
+   ```
+    git clone https://github.com/Mariossb/ArchaeoPyDating.git
+   ```
+
+2. **Navigate to the project directory**: Change your current directory to the cloned repository's directory:
+    ```
+    cd ArchaeoPyDating
+    ```
+
+3. **Install the required libraries**: Use pip in your terminal:
+   ```
+   pip install -r requirements.txt
+   ```
+
+4. **Run the module**: Now, you can use the ArchaeoPyDating module. Create your own .py file and import the module by writting at the beggining:
+   ```python
+   import ArchaeoPyDating as apd
+   ```
+
+
+
+
 ##  Documentation ##
+
 This repository contains a [Jupiter Notebook](APD_example.ipynb) showing examples of the module's use
 
 ## Contact ##
+
 Mario Serrano Sánchez-Bravo  
 Dpto. Física de la Tierra y Astrofísica. Facultad de Ciencias Físicas.  
 Universidad Complutense de Madrid (UCM)  
