@@ -26,10 +26,12 @@ Follow these steps to install and use the ArchaeoPyDating module (please, ensure
    pip install -r requirements.txt
    ```
 
-4. **Run the module**: Now, you can use the ArchaeoPyDating module. Create your own .py file and import the module by writting at the beggining:
+4. **Import the module**: Create your own .py file and import the module by writting at the beggining:
    ```python
    import ArchaeoPyDating as apd
    ```
+
+5. **Use it**: Now, you can use the objects and functions of the ArchaeoPyDating module. See this [Jupyter Notebook](APD_example.ipynb) for examples.
 
 
 
