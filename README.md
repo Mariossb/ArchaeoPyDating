@@ -36,7 +36,11 @@ Follow these steps to install and use the ArchaeoPyDating module (please, ensure
 
 ##  Documentation ##
 
-This repository contains a [Jupiter Notebook](APD_example.ipynb) showing examples of the module's use
+- [Original paper](http:doi)
+
+- [ejemplo.pdf](ejemplo.pdf): User's manual
+
+- [APD_example.ipynb](APD_example.ipynb): A Jupyter notebook showing examples of the module's use
 
 ## Contact ##
 
