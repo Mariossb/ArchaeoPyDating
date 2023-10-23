@@ -37,9 +37,9 @@ Follow these steps to install and use the ArchaeoPyDating module (please, ensure
 
 ##  Documentation ##
 
-- [Original paper](http:doi)
+- [Original paper](http:doi) (when available)
 
-- [ejemplo.pdf](ejemplo.pdf): User's manual
+- [ejemplo.pdf](ejemplo.pdf): User's manual (when available)
 
 - [APD_example.ipynb](APD_example.ipynb): A Jupyter notebook showing examples of the module's use
 
