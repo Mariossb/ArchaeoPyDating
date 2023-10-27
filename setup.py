@@ -8,5 +8,8 @@ setup(
     description='Python tool for archaeomagnetic dating',
     author='Mario Serrano',  
     author_email='marioser@ucm.es',  
-    url='https://github.com/Mariossb/ArchaeoPyDating',  
+    url='https://github.com/Mariossb/ArchaeoPyDating',
+    package_data={
+        'ArchaeoPyDating': ['curves/**/*'],
+    }
 )
