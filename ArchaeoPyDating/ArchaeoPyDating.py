@@ -363,7 +363,7 @@ class Curve:
     def __init__(self, regional=None, gmodel=None, rmodel=None, lat=None, lon=None, newpsvc=None):
         if regional:
             self.name = regional
-            self.matriz = np.loadtxt('curves/regional/' + local[regional][2])
+            self.matriz = np.loadtxt(os.path.join(dir_path, 'curves', 'regional', local[regional][2]))
             self.lat, self.lon = local[regional][0:2]
             if self.matriz.shape[1] == 7:
                 self.t, self.D, self.I, self.eD, self.eI, self.F, self.eF = self.matriz.T
