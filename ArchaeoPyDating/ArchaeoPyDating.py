@@ -17,9 +17,9 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 class Model:
     def __init__(self, name):
         self.name = name
-        self.coeff = np.loadtxt(os.path.join(dir_path, 'curves', 'gmodel', global_models[name][0])
-        self.ecoeff = np.loadtxt(os.path.join(dir_path, 'curves', 'gmodel', global_models[name][1])
-        self.t = np.loadtxt(os.path.join(dir_path, 'curves', 'gmodel', global_models[name][2])
+        self.coeff = np.loadtxt(os.path.join(dir_path, 'curves', 'gmodel', global_models[name][0]))
+        self.ecoeff = np.loadtxt(os.path.join(dir_path, 'curves', 'gmodel', global_models[name][1]))
+        self.t = np.loadtxt(os.path.join(dir_path, 'curves', 'gmodel', global_models[name][2]))
 
     def normal_distribute(self):
         '''Return random Gauss coefficients acording to a normal distribution'''
