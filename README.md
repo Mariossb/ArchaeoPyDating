@@ -10,7 +10,7 @@ ArchaeoPyDating is a Python tool designed for archaeomagnetic dating. This tool 
 
 You can install the ArchaeoPyDating module by directly running the following command in your terminal (please ensure you have Python, pip, and git installed on your system):
 ```
-pip install git+https://github.com/Mariossb/ArchaeoPyDating
+pip install git+https://github.com/Mariossb/ArchaeoPyDating.git
 ```
 If you have a virtual environment activated, the module will be installed in that virtual environment. If you do not have a virtual environment activated, it will be installed in the global Python environment on your system.
 
