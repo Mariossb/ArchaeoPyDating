@@ -6,6 +6,7 @@ import cartopy.crs as ccrs
 from cartopy.io.img_tiles import Stamen
 from past.utils import old_div
 import warnings
+import os
 from .reference_curves import *
 
 warnings.filterwarnings("ignore")
