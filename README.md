@@ -8,30 +8,42 @@ ArchaeoPyDating is a Python tool designed for archaeomagnetic dating. This tool 
 
 ## Installation ##
 
-Follow these steps to install and use the ArchaeoPyDating module (please, ensure you have Python and pip installed on your system):
+You can install the ArchaeoPyDating module by directly running the following command in your terminal (please ensure you have Python, pip, and git installed on your system):
+```
+pip install git+https://github.com/Mariossb/ArchaeoPyDating
+```
+If you have a virtual environment activated, the module will be installed in that virtual environment. If you do not have a virtual environment activated, it will be installed in the global Python environment on your system.
 
-1. **Clone the repository**: Open your terminal, create a new directory or navigate to a desired one, and run the following command:
+If you want to create a directory within which you can create a virtual Python environment for your archaeomagnetic dating projects, follow these steps:
+
+1. **Create a new directory**: Open your terminal, create a new directory, and/or navigate to it:
    ```
-    git clone https://github.com/Mariossb/ArchaeoPyDating.git
+   mkdir mydirectoryname
+   cd mydirectoryname
    ```
 
-2. **Navigate to the project directory**: Change your current directory to the cloned repository's directory:
+2. **Create a virtual Python environment**: 
     ```
-    cd ArchaeoPyDating
+    python -m venv myenvname
     ```
 
-3. **Install the required libraries**: Use pip in your terminal:
+3. **Activate the virtual environment**: 
    ```
-   pip install -r requirements.txt
+   myenvname\Scripts\activate  # On Windows systems
+   ```   
+   ```
+   source myenvname/bin/activate  # On Unix/Linux-based systems
    ```
 
-4. **Import the module**: Create your own .py file and import the module by writting at the beggining:
+4. **Intall the module along with all dependencies**: 
+   ```
+   pip install git+https://github.com/Mariossb/ArchaeoPyDating
+   ```
+
+5. **Use it**:  Now, you can use the objects and functions of the ArchaeoPyDating module within this virtual environment. To import them into your .py files, include the following line at the beginning (see this [notebook](APD_example.ipynb) for examples):
    ```python
    import ArchaeoPyDating as apd
    ```
-
-5. **Use it**: Now, you can use the objects and functions of the ArchaeoPyDating module. See this [Jupyter Notebook](APD_example.ipynb) for examples.
-
 
 
 
