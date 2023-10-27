@@ -14,9 +14,9 @@ warnings.filterwarnings("ignore")
 class Model:
     def __init__(self, name):
         self.name = name
-        self.coeff = np.loadtxt('curvas/gmodel/' + global_models[name][0])
-        self.ecoeff = np.loadtxt('curvas/gmodel/' + global_models[name][1])
-        self.t = np.loadtxt('curvas/gmodel/' + global_models[name][2])
+        self.coeff = np.loadtxt('curves/gmodel/' + global_models[name][0])
+        self.ecoeff = np.loadtxt('curves/gmodel/' + global_models[name][1])
+        self.t = np.loadtxt('curves/gmodel/' + global_models[name][2])
 
     def normal_distribute(self):
         '''Return random Gauss coefficients acording to a normal distribution'''
@@ -51,7 +51,7 @@ class Model:
 class RegionalModel:
     def __init__(self, name):
         self.name = name
-        self.matriz = np.loadtxt('curvas/rmodel/' + regional_models[name])
+        self.matriz = np.loadtxt('curves/rmodel/' + regional_models[name])
         self.or_lat, self.or_lon = self.matriz[0, 0], self.matriz[0, 1]
         self.angular_distance = self.matriz[0, 2]
         self.matriz = np.delete(self.matriz, 0, 0)  # para quitar la cabecera
@@ -98,30 +98,30 @@ class Data:
         self.sitename = sitename
 
     def cvp(self, nlat, nlon):
-        # pasamos a radianes
+        # radians
         lat, lon, D, I, nlat, nlon = radians([self.lat, self.lon, self.D, self.I, nlat, nlon])
         self.Dold, self.Iold = np.degrees(D), np.degrees(I)
-        # de lat a colat
+        # from lat 2 colat
         clat, nclat = pi / 2 - np.array([lat, nlat])
-        # coef dipolares
+        # dipolar coef
         g10 = - (cos(D) * cos(I) * sin(clat) + 0.5 * sin(I) * cos(clat))
         g11 = cos(D) * cos(I) * cos(clat) * cos(lon) + sin(D) * cos(I) * sin(lon) - 0.5 * sin(I) * sin(clat) * cos(lon)
         h11 = - (-cos(D) * cos(I) * cos(clat) * sin(lon) + sin(D) * cos(I) * cos(lon) + 0.5 * sin(I) * sin(clat) * sin(
             lon))
-        # comp. x,y,z en el nuevo pto
+        # comp. x,y,z at the new point
         x = -g10 * sin(nclat) + cos(nclat) * (g11 * cos(nlon) + h11 * sin(nlon))
         y = g11 * sin(nlon) - h11 * cos(nlon)
         z = -2 * (g10 * cos(nclat) + sin(nclat) * (g11 * cos(nlon) + h11 * sin(nlon)))
-        # nuevas D, I
+        # news D, I
         Dn, In = cart2dir(x, y, z)
         self.D = Dn
         self.I = In
 
     def vadm(self, nlat):
         # Translate the intensity data using the Virtual Axial Dipole Moment
-        # pasamos a rad
+        # radians
         lat, nlat = radians([self.lat, nlat])
-        # de lat a colat
+        # from lat 2 colat
         clat, nclat = pi / 2 - np.array([lat, nlat])
         Fn = self.F * sqrt((1 + 3 * cos(nclat) ** 2) / (1 + 3 * cos(clat) ** 2))
         self.Fold = self.F
@@ -131,7 +131,7 @@ class Data:
         # Translate the intensity data using the Virtual Dipole Moment
         # you know inclination and intensity in one point
         # and only inclination in a new point
-        # pasamos a rad
+        # radians
         I, In = radians(np.array([self.Iold, self.I]))
         clat, nclat = arctan(2 / tan([I, In]))
         Fn = self.F * sqrt((1 + 3 * cos(nclat) ** 2) / (1 + 3 * cos(clat) ** 2))
@@ -144,38 +144,35 @@ class Dating:
         self.dato = dato
         self.curva = curva
 
-    def datingX(self, indicador):  # indicador: 'D', 'I', 'F'
+    def datingX(self, indicador):  # indicator: 'D', 'I', 'F'
         if indicador == 'D':
-            # defino el intervalo de D
             inter = np.arange(-pi, pi, radians(0.1))
             X, eX = self.dato.D, self.dato.eD
             Xc, eXc = self.curva.D, self.curva.eD
             X, eX, Xc, eXc = radians(X), radians(eX), radians(Xc), radians(eXc)
         if indicador == 'I':
-            # defino el intervalo de I
             inter = np.arange(-pi / 2, pi / 2, radians(0.1))
             X, eX = self.dato.I, self.dato.eI
             Xc, eXc = self.curva.I, self.curva.eI
             X, eX, Xc, eXc = radians(X), radians(eX), radians(Xc), radians(eXc)
         if indicador == 'F':
-            # defino el intervalo de F
             inter = np.arange(0, 100, 0.1)
             X, eX = self.dato.F, self.dato.eF
             Xc, eXc = self.curva.F, self.curva.eF
 
-        # fun probabilidad dato
+        # data fun. probability
         fd1 = exp(- (inter - X) ** 2 / (2 * eX ** 2)) / (eX * sqrt(2 * pi))
-        # calculo la fun probabilidad curva (depende de t)
-        # y la multiplico por la del dato
+        # curve fun. probability (depends on time)
+        # product data fun. and curve fun.
         area = []
         for xc, exc in zip(Xc, eXc):
             fd2 = exp(- (inter - xc) ** 2 / (2 * exc ** 2)) / (exc * sqrt(2 * pi))
             pro = fd1 * fd2
-            areai = np.trapz(pro, inter)  # integracion trapezoidal
+            areai = np.trapz(pro, inter)  # trapezoidal integration
             area = np.append(area, areai)
-        # normalizo el area con respecto al area total
+        # normalization
         area = area / np.trapz(area, self.curva.t)
-        # interpolo para tener un area cada 1 año
+        # interpolation 1yr
         t = np.arange(self.curva.t[0], self.curva.t[-1] + 1, 1)
         cs = CubicSpline(self.curva.t, abs(area))
         z = cs(t)
@@ -190,8 +187,7 @@ class Dating:
         return z
 
     def pb(self, z, gp):
-        '''z se tiene que sacar de datacion.datingX()'''
-        # hago intervalo de 500 entre zmin y zmax
+        '''z from Dating.datingX()'''
         H = np.linspace(min(z), max(z), 501)
         t = np.arange(self.curva.t[0], self.curva.t[-1] + 1, 1)
         area = []
@@ -207,34 +203,33 @@ class Dating:
         return h
 
     def pb_h(self, z, h):
-        '''z se saca de datacion.datingX() y h de datacion.pb()'''
-        # saco la interseccion de z con la alt (=h)
-        # nueva fun para la que voy abuscar solucion
+        '''z from Dating.datingX() and h from Dating.pb()'''
+        # intersection of z and h
+        # new function and its solutions
         t = np.arange(self.curva.t[0], self.curva.t[-1] + 1, 1)
         f = CubicSpline(t, z - h)
         sol = f.roots()
-        # elimino aquellas soluciones fuera del intervalo temporal
+        # no solutions outside the interval
         sol = sol[(sol > t[0]) & (sol < t[-1])]
-        # busco si la derivada es >/< que 0 en las soluciones
-        # para saber si las soluciones indican limites inferiores
-        # o superiores en los intervalos
+        # search if difference of sol are positive or negative
+        # to know if they represent lower or upper bounds
         if f(sol[0], 1) > 0:
             tmin = sol[::2]
             tmax = sol[1::2]
-            # si el ultimo intervalo no termina le acabo en el maximo temporal
+            # if the last interval does not end, I end it at the time maximum.
             if len(tmin) > len(tmax):
                 tmax = np.append(tmax, t[-1])
         if f(sol[0], 1) < 0:
             tmin = sol[1::2]
             tmax = sol[::2]
-            # si el primer intervalo no empieza le empiezo en el minimo temporal
+            # if the first interval does not start, I start it at the minimum time interval
             if len(tmin) < len(tmax):
                 tmin = np.append(t[0], tmin)
-        # podria ser que len de tmin == tmax pq ni empieza ni termina
+        # it could be that len of tmin == tmax because it neither begins nor ends.
         if tmin[0] > tmax[0]:
             tmax = np.append(tmax, t[-1])
             tmin = np.append(t[0], tmin)
-        # dataciones
+        # datings
         dat = {}
         for i in range(len(tmin)):
             dat["Dating result {0}".format(i + 1)] = [int(round(tmin[i] / 5) * 5), int(round(tmax[i] / 5) * 5)]
@@ -244,15 +239,15 @@ class Dating:
     def plot(self, zD=None, zI=None, zF=None, z=None,
              hD=None, hI=None, hF=None, h=None):
 
-        fig = plt.figure(figsize=(18, 12), dpi=300)
+        fig = plt.figure(figsize=(18, 12), dpi=600)
         plt.rcParams.update({'font.size': 14})
-        # create grid con todo
+        # create grid with all
         gs = fig.add_gridspec(nrows=3, ncols=2)
-        # dentro de ese grid crear tres grid para la parte izq.
+        # within that grid create three grids for the left side.
         gsD = gs[0, 0].subgridspec(2, 1, hspace=.0, height_ratios=[3, 1.5])
         gsI = gs[1, 0].subgridspec(2, 1, hspace=0, height_ratios=[3, 1.5])
         gsF = gs[2, 0].subgridspec(2, 1, hspace=0, height_ratios=[3, 1.5])
-        # dentro de cada uno de esos grid meter dos ax
+        # within each of these grids, put two ax
         axX = [None, None, None]
         axfX = [None, None, None]
         gsX = [gsD, gsI, gsF]
@@ -261,17 +256,17 @@ class Dating:
             plt.tick_params('x', labelbottom=False, direction='in')
             axfX[i] = fig.add_subplot(gsXi[1], sharex=axX[i])
 
-        # ax de la f comb
+        # ax of f comb
         axfcomb = fig.add_subplot(gs[0, 1], sharex=axfX[0])
 
-        # grid con 2 huecos para el mapita
+        # grid for the map
         gs_info = gs[1, 1].subgridspec(1, 1)
         axmapa = fig.add_subplot(gs_info[0], projection=ccrs.PlateCarree())
 
-        # ultimo ax para la datacion
+        # ax for dating
         axdat = fig.add_subplot(gs[2, 1])
 
-        # defino las cosas a dibujar
+        # define the things to draw
         ylabel = ['Declination [$\degree$]', 'Inclination [$\degree$]', 'Intensity [$\mu$T]']
         X = [self.dato.D, self.dato.I, self.dato.F]
         eX = [self.dato.eD, self.dato.eI, self.dato.eF]
@@ -281,7 +276,7 @@ class Dating:
         tz = np.arange(self.curva.t[0], self.curva.t[-1] + 1, 1)
         H = [hD, hI, hF]
 
-        # ploteemos las curvas con el dato
+        # plot the curves with the data
         for ax, zx, x, ex, xc, exc, label in zip(axX, zX, X, eX, Xc, eXc, ylabel):
             if zx is not None:
                 ax.plot(self.curva.t, xc, 'r-')
@@ -293,7 +288,7 @@ class Dating:
             if zx is None:
                 ax.remove()
 
-        # ploteamos las densidades individuales
+        # plot the PDFs
         for ax, zx, hx in zip(axfX, zX, H):
             if zx is not None:
                 ax.plot(tz, zx, 'k-')
@@ -302,10 +297,11 @@ class Dating:
                 ax.set_xlabel('Year')
                 ax.axhline(hx)
                 ax.fill_between(tz, zx, where=zx > hx, color='gold')
+                ax.set_yticklabels([])
             if zx is None:
                 ax.remove()
 
-        # plot la densidad combinada
+        # plot the combined PDF
         axfcomb.plot(tz, z, 'k-')
         axfcomb.axhline(h)
         axfcomb.fill_between(tz, z, where=z > h, color='gold')
@@ -313,7 +309,7 @@ class Dating:
         axfcomb.set_ylabel('Combined PDF', multialignment='center')
         axfcomb.set_xlabel('Year')
 
-        # plot el mapita
+        # plot the map
         axmapa.coastlines()
         # tiler = Stamen('terrain-background')
         # axmapa.add_image(tiler, 6)
@@ -329,25 +325,30 @@ class Dating:
             axmapa.set_extent([self.dato.lon - 30, self.dato.lon + 30, self.dato.lat - 20, self.dato.lat + 20],
                               crs=ccrs.PlateCarree())
 
-        # escondo los ax con texto
+        # hide ax with text
         axdat.axis('off')
         #### text ####
-        text = 'Site: ' + self.dato.sitename + '\n\nReference Curve: ' + self.curva.name + '\n\nBetween t = ' + str(
-            round(min(self.curva.t))) + ' and ' + str(round(max(self.curva.t))) + ' yr'
-        # text = 'Site: ' + self.dato.sitename + '\n\nReference Curve: ' + self.curva.name + '\n\nBetween t = '
-        # if min(self.curva.t) >= 0:
-        #    text += str(round(min(self.curva.t))) + ' AD'
-        # else:
-        #    text += str(round(abs(min(self.curva.t)))) + ' BC'
-        #
-        # text += ' and '
-        #
-        # if max(self.curva.t) >= 0:
-        #    text += str(round(max(self.curva.t))) + ' AD'
-        # else:
-        #    text += str(round(abs(min(self.curva.t)))) + ' BC'
-        #### text ####
-        axdat.text(0.5, 0.5, text, fontsize=20, fontweight='bold', ha='center')
+        def BCADyear(year):
+            if year > 0:
+                return str(year) + ' AD'
+            else:
+                return str(abs(year)) + ' BC'
+        text = 'Site: ' + self.dato.sitename + '\n\nReference Curve: ' + self.curva.name + '\n\nBetween t = ' + BCADyear(
+            round(min(self.curva.t))) + ' and ' + BCADyear(round(max(self.curva.t)))
+
+        result = self.pb_h(z, h)
+
+        text += '\n\n'+'Dating results:'+'\n\n'
+        counter = 0
+        for key, value in result.items():
+            m = BCADyear(value[0])
+            M = BCADyear(value[1])
+            text += m+' - '+M+';  '
+            counter += 1
+            if counter % 4 ==0: text += '\n'
+
+
+        axdat.text(0.5, 0.2, text, fontsize=14, fontweight='bold', ha='center')
 
         plt.tight_layout()
 
@@ -358,18 +359,15 @@ class Curve:
     def __init__(self, regional=None, gmodel=None, rmodel=None, lat=None, lon=None, newpsvc=None):
         if regional:
             self.name = regional
-            self.matriz = np.loadtxt('curvas/regional/' + local[regional][2])
+            self.matriz = np.loadtxt('curves/regional/' + local[regional][2])
             self.lat, self.lon = local[regional][0:2]
             if self.matriz.shape[1] == 7:
-                self.t, self.D, self.I, eD, eI, self.F, eF = self.matriz.T
-                self.eD, self.eI, self.eF = eD / 1.96, eI / 1.96, eF / 1.96
+                self.t, self.D, self.I, self.eD, self.eI, self.F, self.eF = self.matriz.T
             if self.matriz.shape[1] == 5:
-                self.t, self.D, self.I, eD, eI = self.matriz.T
-                self.eD, self.eI = eD / 1.96, eI / 1.96
+                self.t, self.D, self.I, self.eD, self.eI = self.matriz.T
                 self.F, self.eF = np.zeros(self.matriz.shape[0]), np.zeros(self.matriz.shape[0])
             if self.matriz.shape[1] == 3:
-                self.t, self.F, eF = self.matriz.T
-                self.eF = eF / 1.96
+                self.t, self.F, self.eF = self.matriz.T
                 self.D, self.I, self.eD, self.eI = np.zeros(self.matriz.shape[0]), np.zeros(self.matriz.shape[0]), np.zeros(self.matriz.shape[0]), np.zeros(self.matriz.shape[0])
 
         if gmodel:
@@ -401,16 +399,13 @@ class Curve:
             self.name = 'Private curve'
             self.lat, self.lon = lat, lon
             if self.matriz.shape[1] == 7:
-                self.t, self.D, self.I, eD, eI, self.F, eF = self.matriz.T
-                self.eD, self.eI, self.eF = eD / 1.96, eI / 1.96, eF / 1.96
+                self.t, self.D, self.I, self.eD, self.eI, self.F, self.eF = self.matriz.T
             if self.matriz.shape[1] == 5:
-                self.t, self.D, self.I, eD, eI = self.matriz.T
-                self.eD, self.eI = eD / 1.96, eI / 1.96
+                self.t, self.D, self.I, self.eD, self.eI = self.matriz.T
             if self.matriz.shape[1] == 3:
-                self.t, self.F, eF = self.matriz.T
-                self.eF = eF / 1.96
+                self.t, self.F, self.eF = self.matriz.T
 
-        # interpolate to have every 10 years
+        # interpolte to 10 yr
         t = np.arange(self.t[0], self.t[-1] + 10, 10)
         d = CubicSpline(self.t, self.D);
         i = CubicSpline(self.t, self.I);
@@ -422,7 +417,7 @@ class Curve:
         self.eD, self.eI, self.eF = ed(t), ei(t), ef(t)
         self.t = t
 
-    def int_temp(self, tmin, tmax):  # if a temporal interval is defined
+    def int_temp(self, tmin, tmax):  # if a time interval is defined
         self.D = self.D[(self.t >= tmin) & (self.t <= tmax)];
         self.eD = self.eD[(self.t >= tmin) & (self.t <= tmax)]
         self.I = self.I[(self.t >= tmin) & (self.t <= tmax)];
@@ -447,18 +442,14 @@ def cart2dir(X, Y, Z):
 
 def docustom(lon, lat, alt, gh):
     """
-    From pmagpy (modified)
+    Passes the coefficients to the Malin and Barraclough
+    routine (function pmag.magsyn) to calculate the field from the coefficients.
 
     Parameters:
     -----------
     lon  = east longitude in degrees (0 to 360 or -180 to 180)
     lat   = latitude in degrees (-90 to 90)
     alt   = height above mean sea level in km (itype = 1 assumed)
-    gh = matrix with Gauss coef.
-    -----------
-    Output:
-    -----------
-    x,y,z,f = value of the geomagnetic elements in cartesian coordinates and total intensity
     """
     model, date, itype = 0, 0, 1
     sv = np.zeros(4 * len(gh))
@@ -469,8 +460,6 @@ def docustom(lon, lat, alt, gh):
 
 def magsyn(gh, sv, b, date, itype, alt, colat, elong):
     """
-    From pmagpy
-
   Computes x, y, z, and f for a given date and position, from the
   spherical harmonic coefficients of the International Geomagnetic
   Reference Field (IGRF).

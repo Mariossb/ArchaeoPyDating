@@ -25,7 +25,7 @@ local = {
 
     'Europe Neolithic (directional)': [43.0, 11.0, 'Directional Neolithic.dat'],
 
-    'Hawaii': [20.24, -155.87, 'Hawaii_Tema2017.dat'], 
+    'Hawaii': [20.24, -155.87, 'Hawaii_Tema2017.dat'], #OJO, no pone las coordenadas en la ref.
 
     'New Zealand': [-40, 175, 'NZ11k.dat'],
 
@@ -43,6 +43,9 @@ global_models = {
     'SHAWQ-IronAge': ['shawqIA_c.dat', 'shawqIA_ec.dat', 'shawqIA_t.dat'],
     'ArchKalmag14k': ['archkalmag14k_c.dat', 'archkalmag14k_ec.dat', 'archkalmag14k_t.dat'],
     'BIGMUDI4k.1': ['bigmudi4k1_c.dat', 'bigmudi4k1_ec.dat', 'bigmudi4k1_t.dat'],
+    'arch3k1': ['arch3k1_c.dat', 'arch3k1_ec.dat', 'arch3k1_t.dat'],
+    'cals3k4': ['cals3k4_c.dat', 'cals3k4_ec.dat', 'cals3k4_t.dat'],
+    'cals10k1b': ['cals10k1b_c.dat', 'cals10k1b_ec.dat', 'cals10k1b_t.dat'],
 
 }
 
@@ -55,7 +58,7 @@ regional_models = {
 }
 
 
-curvas = {
+curves = {
 
 'Select one': [''],
 
