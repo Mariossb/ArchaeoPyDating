@@ -10,13 +10,16 @@ from .reference_curves import *
 
 warnings.filterwarnings("ignore")
 
+# directory of this script
+dir_path = os.path.dirname(os.path.realpath(__file__))
+
 
 class Model:
     def __init__(self, name):
         self.name = name
-        self.coeff = np.loadtxt('curves/gmodel/' + global_models[name][0])
-        self.ecoeff = np.loadtxt('curves/gmodel/' + global_models[name][1])
-        self.t = np.loadtxt('curves/gmodel/' + global_models[name][2])
+        self.coeff = np.loadtxt(os.path.join(dir_path, 'curves', 'gmodel', global_models[name][0])
+        self.ecoeff = np.loadtxt(os.path.join(dir_path, 'curves', 'gmodel', global_models[name][1])
+        self.t = np.loadtxt(os.path.join(dir_path, 'curves', 'gmodel', global_models[name][2])
 
     def normal_distribute(self):
         '''Return random Gauss coefficients acording to a normal distribution'''
@@ -51,7 +54,7 @@ class Model:
 class RegionalModel:
     def __init__(self, name):
         self.name = name
-        self.matriz = np.loadtxt('curves/rmodel/' + regional_models[name])
+        self.matriz = np.loadtxt(os.path.join(dir_path, 'curves', 'rmodel', regional_models[name]))
         self.or_lat, self.or_lon = self.matriz[0, 0], self.matriz[0, 1]
         self.angular_distance = self.matriz[0, 2]
         self.matriz = np.delete(self.matriz, 0, 0)  # para quitar la cabecera
