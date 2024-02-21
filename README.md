@@ -25,7 +25,7 @@ You can use ArchaeoPyDating directly in a Google Colab notebook. Here's how:
 
 ## Installation ##
 
-You can install the ArchaeoPyDating module by directly running the following command in your terminal (please ensure you have Python, pip, and git installed on your system):
+You can install the ArchaeoPyDating module in your own system by directly running the following command in your terminal (please ensure you have Python, pip, and git installed on your system):
 ```
 pip install git+https://github.com/Mariossb/ArchaeoPyDating.git
 ```
