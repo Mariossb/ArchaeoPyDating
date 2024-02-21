@@ -6,6 +6,21 @@ ArchaeoPyDating is a Python tool designed for archaeomagnetic dating. This tool 
 
 ##  Citation ##
 
+## Using the tool in Google Colab ##
+
+You can use ArchaeoPyDating directly in a Google Colab notebook. Here's how:
+
+1. **Open a new book**
+
+2. **Install the module in the current notebook:**
+   ```! pip install git+https://github.com/Mariossb/ArchaeoPyDating.git```
+
+3. **Import the module:**
+      ```python
+   import ArchaeoPyDating.ArchaeoPyDating as apd
+   ```
+4. **Usage**:  Now, you can utilize the objects and functions provided by the ArchaeoPyDating module within this Google Colab notebook.
+
 ## Installation ##
 
 You can install the ArchaeoPyDating module by directly running the following command in your terminal (please ensure you have Python, pip, and git installed on your system):
