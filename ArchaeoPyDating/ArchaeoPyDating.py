@@ -362,7 +362,7 @@ class Dating:
 class Curve:
     def __init__(self, local=None, gmodel=None, rmodel=None, lat=None, lon=None, newpsvc=None):
         if local:
-            self.name = local
+            self.name = local +'  (local curve)'
             self.matriz = np.loadtxt(os.path.join(dir_path, 'curves', 'regional', local_curves[local][2]))
             self.lat, self.lon = local_curves[local][0:2]
             if self.matriz.shape[1] == 7:
