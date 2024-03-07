@@ -248,7 +248,7 @@ class Dating:
             combined_tmax.append(tmax[-1])
         # datings
         dat = {}
-        for i in range(len(tmin)):
+        for i in range(len(combined_tmin)):
             # dat["Dating result {0}".format(i + 1)] = [int(round(tmin[i] / 5) * 5), int(round(tmax[i] / 5) * 5)]
             dat["Dating result {0}".format(i + 1)] = [int(combined_tmin[i]), int(combined_tmax[i])]
         result = {key: [dat[key][0], dat[key][1]] for key in dat}
