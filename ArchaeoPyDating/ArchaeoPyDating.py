@@ -233,8 +233,8 @@ class Dating:
         if tmin[0] > tmax[0]:
             tmax = np.append(tmax, t[-1])
             tmin = np.append(t[0], tmin)
-        tmax = int(round(tmax / 5) * 5)
-        tmin = int(round(tmin / 5) * 5)
+        tmax = int(np.round(tmax / 5) * 5)
+        tmin = int(np.round(tmin / 5) * 5)
         # Combine consecutive intervals separated by exactly 5 years
         combined_tmin = [tmin[0]]
         combined_tmax = []
