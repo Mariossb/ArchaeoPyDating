@@ -236,16 +236,17 @@ class Dating:
         tmax = np.round(tmax / 5) * 5
         tmin = np.round(tmin / 5) * 5
         # Combine consecutive intervals separated by exactly 5 years
-        combined_tmin = [tmin[0]]
+        combined_tmin = []
         combined_tmax = []
-        for i in range(1, len(tmin)):
-            if tmin[i] - tmax[i - 1] == 5:
+        for i in range(len(tmin)):
+            if not combined_tmin:
+                combined_tmin.append(tmin[i])
+                combined_tmax.append(tmax[i])
+            elif tmin[i] - combined_tmax[-1] == 5:
                 combined_tmax[-1] = tmax[i]
             else:
                 combined_tmin.append(tmin[i])
                 combined_tmax.append(tmax[i])
-        if not combined_tmax or combined_tmax[-1] != tmax[-1]:
-            combined_tmax.append(tmax[-1])
         # datings
         dat = {}
         for i in range(len(combined_tmin)):
