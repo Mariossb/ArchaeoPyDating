@@ -1,10 +1,12 @@
-# ArchaeoPyDating (under construction)
+# ArchaeoPyDating
 ArchaeoPyDating is a Python tool designed for archaeomagnetic dating. This tool is an updated release of the Matlab tool archaeo_dating (Pavón-Carrasco et al., 2011). ArchaeoPyDating is available in two formats:
 - **Online Form:** For a quick and user-friendly experience, access our tool at http://pc213fis.fis.ucm.es:8080. Simply input your archaeomagnetic data, select a reference curve and a confidence limit, and click submit. The tool will process your data online and present your dating results within seconds. This format requires no coding knowledge or installations.
 - **Python Module:** For users with programming skills or those seeking a more in-depth and flexible analysis. You can import this module into your Python scripts for more complex studies, automation, and integration with other libraries. It’s also compatible with notebooks for comprehensive coding studies.
 
 
-##  Citation ##
+##  How to cite ##
+
+Serrano, M., Pavón-Carrasco, F.J., Campuzano, S.A., & Osete, M.L. (2024). ArchaeoPyDating: A new user-friendly release for archaeomagnetic dating. Archaeometry, 1–14. https://doi.org/10.1111/arcm.13009
 
 ## Using the tool in Google Colab ##
 
@@ -66,16 +68,14 @@ If you want to create a directory within which you can create a virtual Python e
 
 ##  Documentation ##
 
-- [Original paper](http:doi) (when available)
+- [Original paper](https://doi.org/10.1111/arcm.13009)
 
-- [ejemplo.pdf](ejemplo.pdf): User's manual (when available)
-
-- [APD_example.ipynb](APD_example.ipynb): A Jupyter notebook showing examples of the module's use
+- [Notebook showing examples of the Python module's use](APD_example.ipynb)
 
 ## Contact ##
 
 Mario Serrano Sánchez-Bravo  
 Dpto. Física de la Tierra y Astrofísica. Facultad de Ciencias Físicas.  
 Universidad Complutense de Madrid (UCM)  
-marioser@ucm.es  
+marioser@ucm.es  || paleomag@ucm.es
 
