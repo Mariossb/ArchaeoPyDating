@@ -31,6 +31,8 @@ local_curves = {
 
     'New Zealand (high resolution last 1 kyr)': [-40, 175, 'NZ1k.dat'],
 
+    'LAC.v.2.0 (Levant intensity)': [31.78, 35.21, 'LAC_V_2_0.txt'],
+
     'New One':[],
 
 }
