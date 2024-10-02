@@ -65,7 +65,7 @@ curves = {
 
 'Select one': [''],
 
-'Local Curve': list(local.keys()),
+'Local Curve': list(local_curves.keys()),
 
 'Regional Model': list(regional_models.keys()),
 
