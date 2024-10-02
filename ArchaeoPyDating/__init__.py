@@ -1,2 +1,2 @@
-from .ArchaeoPyDating import *
-from .reference_curves import *
+from ArchaeoPyDating import *
+from reference_curves import *
