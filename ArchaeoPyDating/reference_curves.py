@@ -1,5 +1,5 @@
 
-local = {
+local_curves = {
 
     'Iberia': [40.4, -3.7, 'psvc_iberia_Molina-Cardin et al_2018.dat'],
 
