@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline, griddata
 import shapefile
 import warnings
-from reference_curves import *
+from .reference_curves import *
 
 warnings.filterwarnings("ignore")
 
