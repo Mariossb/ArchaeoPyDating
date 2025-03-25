@@ -49,7 +49,7 @@ global_models = {
     'SHAWQ-IronAge': ['shawqIA_c.dat', 'shawqIA_ec.dat', 'shawqIA_t.dat'],
     'ArchKalmag14k.r': ['archkalmag14k_c.dat', 'archkalmag14k_ec.dat', 'archkalmag14k_t.dat'],
     'BIGMUDI4k.1': ['bigmudi4k1_c.dat', 'bigmudi4k1_ec.dat', 'bigmudi4k1_t.dat'],
-
+    'SHAS.LIAA': ['shasliaa_c.dat', 'shasliaa_ec.dat', 'shasliaa_t.dat'],
 }
 
 
@@ -102,6 +102,7 @@ curves_references = {
         'SHAWQ-IronAge': 'SHAWQ-IronAge (Osete et al., 2020) [1300 BC - 0 AD]',
         'ArchKalmag14k.r': 'ArchKalmag14k.r (Schanner et al., 2022) [12000 BC - 1950 AD]',
         'BIGMUDI4k.1': 'BIGMUDI4k.1 (Arneitz et al., 2019) [2000 BC - 2000 AD]',
+        'SHAS.LIAA': 'SHAS.LIAA (Rivera et al. 2023) [12000 BC - 1900 AD]',
     },
     "Regional Models": {
         'SCHA.DIF.4k': 'SCHA.DIF.4k (Pavón-Carrasco et al., 2021) [2000 BC - 1900 AD]',
