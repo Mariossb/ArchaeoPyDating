@@ -7,6 +7,7 @@ import warnings
 from .reference_curves import *
 from past.utils import old_div
 import os
+from pyshtools import legendre
 
 warnings.filterwarnings("ignore")
 
@@ -35,7 +36,8 @@ class Model:
 
         for i in range(it):
             c = self.normal_distribute()
-            X[:, i], Y[:, i], Z[:, i], F[:, i] = docustom(lon, lat, 0, c[:].transpose())
+            X[:, i], Y[:, i], Z[:, i], F[:, i] = gh2XYZ(c, lat, lon)
+            #X[:, i], Y[:, i], Z[:, i], F[:, i] = docustom(lon, lat, 0, c[:].transpose())
 
         D, I = cart2dir(X, Y, Z)
 
@@ -418,162 +420,74 @@ def cart2dir(X, Y, Z):
     I = np.degrees(np.arctan(Z / np.sqrt(X ** 2 + Y ** 2)))
     return D, I
 
-
-def docustom(lon, lat, alt, gh):
+def frechet_basis(loc: np.ndarray,
+                  maxdegree: int
+                  ) -> np.ndarray:
     """
-    Passes the coefficients to the Malin and Barraclough
-    routine (function pmag.magsyn) to calculate the field from the coefficients.
+    Calculates the frechet matrix for the given stations and maximum degree
+    Parameters
+    ----------
+    loc
+        coordinates of stations. Each row contains:
+            colatitude in radians
+            longitude in radians
+            radius in km
+    maxdegree
+        Maximum spherical degree
 
-    Parameters:
-    -----------
-    lon  = east longitude in degrees (0 to 360 or -180 to 180)
-    lat   = latitude in degrees (-90 to 90)
-    alt   = height above mean sea level in km (itype = 1 assumed)
+    Returns
+    -------
+    frechxyz
+        size= stations X 3 X nr_coeffs matrix: contains the frechet coefficients
+            first dx, then dy, then dz
     """
-    model, date, itype = 0, 0, 1
-    sv = np.zeros(4 * len(gh))
-    colat = 90. - lat
-    x, y, z, f = magsyn(gh, sv, model, date, itype, alt, colat, lon)
-    return x, y, z, f
+    schmidt_total = int((maxdegree+1) * (maxdegree+2) / 2)
+    frechxyz = np.zeros(((maxdegree+1)**2 - 1, 3, len(loc)))
+    schmidt_p = np.zeros((len(loc), schmidt_total))
+    schmidt_dp = np.zeros((len(loc), schmidt_total))
+    for i, coord in enumerate(loc):
+        schmidt_p[i], schmidt_dp[i] = \
+            legendre.PlmSchmidt_d1(maxdegree, np.cos(coord[0]))
+        schmidt_dp[i] *= -np.sin(coord[0])
+    counter = 0
+    # dx, dy, dz in separate rows to increase speed
+    for n in range(1, maxdegree+1):
+        index = int(n * (n+1) / 2)
+        mult_factor = (6371.2 / loc[:, 2]) ** (n+1)
+        # first g_n^0
+        frechxyz[counter, 0] = mult_factor * schmidt_dp[:, index]
+        # frechxyz[counter, 1] = 0
+        frechxyz[counter, 2] = -mult_factor * (n+1) * schmidt_p[:, index]
+        counter += 1
+        for m in range(1, n+1):
+            # Then the g-elements
+            frechxyz[counter, 0] = mult_factor\
+                * np.cos(m * loc[:, 1]) * schmidt_dp[:, index+m]
+            frechxyz[counter, 1] = m / np.sin(loc[:, 0]) * mult_factor\
+                * np.sin(m * loc[:, 1]) * schmidt_p[:, index+m]
+            frechxyz[counter, 2] = -mult_factor * (n+1)\
+                * np.cos(m * loc[:, 1]) * schmidt_p[:, index+m]
+            counter += 1
+            # Now the h-elements
+            frechxyz[counter, 0] = mult_factor\
+                * np.sin(m * loc[:, 1]) * schmidt_dp[:, index+m]
+            frechxyz[counter, 1] = -m / np.sin(loc[:, 0]) * mult_factor\
+                * np.cos(m * loc[:, 1]) * schmidt_p[:, index+m]
+            frechxyz[counter, 2] = -mult_factor * (n+1)\
+                * np.sin(m * loc[:, 1]) * schmidt_p[:, index+m]
+            counter += 1
+    # transpose to get frechet matrix
+    return np.swapaxes(frechxyz, 0, 2)
 
+def gh2XYZ(gh, lat, lon):
 
-def magsyn(gh, sv, b, date, itype, alt, colat, elong):
-    """
-  Computes x, y, z, and f for a given date and position, from the
-  spherical harmonic coefficients of the International Geomagnetic
-  Reference Field (IGRF).
-  From Malin and Barraclough (1981), Computers and Geosciences, V.7, 401-405.
-
-  Input:
-        date  = Required date in years and decimals of a year (A.D.)
-        itype = 1, if geodetic coordinates are used, 2 if geocentric
-        alt   = height above mean sea level in km (if itype = 1)
-        alt   = radial distance from the center of the earth (itype = 2)
-        colat = colatitude in degrees (0 to 180)
-        elong = east longitude in degrees (0 to 360)
-                gh        = main field values for date (calc. in igrf subroutine)
-                sv        = secular variation coefficients (calc. in igrf subroutine)
-                begin = date of dgrf (or igrf) field prior to required date
-
-  Output:
-        x     - north component of the magnetic force in nT
-        y     - east component of the magnetic force in nT
-        z     - downward component of the magnetic force in nT
-        f     - total magnetic force in nT
-
-        NB: the coordinate system for x,y, and z is the same as that specified
-        by itype.
-
-# Modified 4/9/97 to use DGRFs from 1945 to 1990 IGRF
-# Modified 10/13/06 to use  1995 DGRF, 2005 IGRF and sv coefficient
-# for extrapolation beyond 2005. Coefficients from Barton et al. PEPI, 97: 23-26
-# (1996), via web site for NOAA, World Data Center A. Modified to use
-#degree and
-# order 10 as per notes in Malin and Barraclough (1981).
-# coefficients for DGRF 1995 and IGRF 2005 are from http://nssdcftp.gsfc.nasa.gov/models/geomagnetic/igrf/fortran_code/
-# igrf subroutine calculates
-# the proper main field and secular variation coefficients (interpolated between
-# dgrf values or extrapolated from 1995 sv values as appropriate).
-    """
-    #
-    #       real gh(120),sv(120),p(66),q(66),cl(10),sl(10)
-    #               real begin,dateq
-    p = np.zeros((66), 'f')
-    q = np.zeros((66), 'f')
-    cl = np.zeros((10), 'f')
-    sl = np.zeros((10), 'f')
-    begin = b
-    t = date - begin
-    r = alt
-    one = colat * 0.0174532925
-    ct = np.cos(one)
-    st = np.sin(one)
-    one = elong * 0.0174532925
-    cl[0] = np.cos(one)
-    sl[0] = np.sin(one)
-    x, y, z = 0.0, 0.0, 0.0
-    cd, sd = 1.0, 0.0
-    l, ll, m, n = 1, 0, 1, 0
-    if itype != 2:
-        #
-        # if required, convert from geodectic to geocentric
-        a2 = 40680925.0
-        b2 = 40408585.0
-        one = a2 * st * st
-        two = b2 * ct * ct
-        three = one + two
-        rho = np.sqrt(three)
-        r = np.sqrt(alt * (alt + 2.0 * rho) +
-                    old_div((a2 * one + b2 * two), three))
-        cd = old_div((alt + rho), r)
-        sd = (a2 - b2) / rho * ct * st / r
-        one = ct
-        ct = ct * cd - st * sd
-        st = st * cd + one * sd
-    ratio = old_div(6371.2, r)
-    rr = ratio * ratio
-    #
-    # compute Schmidt quasi-normal coefficients p and x(=q)
-    p[0] = 1.0
-    p[2] = st
-    q[0] = 0.0
-    q[2] = ct
-    for k in range(1, 66):
-        if n < m:  # else go to 2
-            m = 0
-            n = n + 1
-            rr = rr * ratio
-            fn = n
-            gn = n - 1
-        # 2
-        fm = m
-        if k != 2:  # else go to 4
-            if m == n:  # else go to 3
-                one = np.sqrt(1.0 - old_div(0.5, fm))
-                j = k - n - 1
-                p[k] = one * st * p[j]
-                q[k] = one * (st * q[j] + ct * p[j])
-                cl[m - 1] = cl[m - 2] * cl[0] - sl[m - 2] * sl[0]
-                sl[m - 1] = sl[m - 2] * cl[0] + cl[m - 2] * sl[0]
-            else:
-                # 3
-                gm = m * m
-                one = np.sqrt(fn * fn - gm)
-                two = old_div(np.sqrt(gn * gn - gm), one)
-                three = old_div((fn + gn), one)
-                i = k - n
-                j = i - n + 1
-                p[k] = three * ct * p[i] - two * p[j]
-                q[k] = three * (ct * q[i] - st * p[i]) - two * q[j]
-        #
-        # synthesize x, y, and z in geocentric coordinates.
-        # 4
-        one = (gh[l - 1] + sv[ll + l - 1] * t) * rr
-        if m != 0:  # else go to 7
-            two = (gh[l] + sv[ll + l] * t) * rr
-            two = (gh[l]) * rr
-            three = one * cl[m - 1] + two * sl[m - 1]
-            x = x + three * q[k]
-            z = z - (fn + 1.0) * three * p[k]
-            if st != 0.0:  # else go to 5
-                y = y + (one * sl[m - 1] - two * cl[m - 1]) * fm * p[k] / st
-            else:
-                # 5
-                y = y + (one * sl[m - 1] - two * cl[m - 1]) * q[k] * ct
-            l = l + 2
-        else:
-            # 7
-            x = x + one * q[k]
-            z = z - (fn + 1.0) * one * p[k]
-            l = l + 1
-        m = m + 1
-    #
-    # convert to coordinate system specified by itype
-    one = x
-    x = x * cd + z * sd
-    z = z * cd - one * sd
-    f = np.sqrt(x * x + y * y + z * z)
-    #
-    return x, y, z, f
-
-
+    nmax = int((-2 + np.sqrt(4 + 4 * gh.shape[1])) / 2)
+    coord = np.array([[np.radians(90 - lat), np.radians(lon), 6371.2]])  # Make a 2D array
+    A = frechet_basis(coord, nmax)
+    A = A.squeeze(0) # Remove the first dimension
+    XYZ = np.dot(gh, A.T)
+    X = XYZ[:, 0]
+    Y = XYZ[:, 1]
+    Z = XYZ[:, 2]
+    F = np.sqrt(X ** 2 + Y ** 2 + Z ** 2)
+    return X, Y, Z, F
