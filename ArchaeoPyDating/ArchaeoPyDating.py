@@ -26,24 +26,29 @@ class Model:
         '''Return random Gauss coefficients acording to a normal distribution'''
         return np.random.normal(self.coeff, self.ecoeff)
 
-    def psvc(self, lat, lon, it=1000):
-        '''Create a psvc at lat, lon. it refers to the number of iterations needed to obtain
-        the confidence limits by boostrap'''
-        X = np.zeros((len(self.t), it))
-        Y = X.copy()
-        Z = X.copy()
-        F = X.copy()
+    def psvc(self, lat, lon):
+        '''Create a psvc at lat, lon.'''
 
-        for i in range(it):
-            c = self.normal_distribute()
-            X[:, i], Y[:, i], Z[:, i], F[:, i] = gh2XYZ(c, lat, lon)
-            #X[:, i], Y[:, i], Z[:, i], F[:, i] = docustom(lon, lat, 0, c[:].transpose())
+        nmax = int((-2 + np.sqrt(4 + 4 * self.coeff.shape[1])) / 2)
+        coord = np.array([[np.radians(90 - lat), np.radians(lon), 6371.2]])  # Make a 2D array
+        A = frechet_basis(coord, nmax)
+        A = A.squeeze(0) # Remove the first dimension
+        
+        XYZ = np.dot(A, self.coeff.T)
+        X, Y, Z = XYZ
 
         D, I = cart2dir(X, Y, Z)
+        F = np.sqrt(X ** 2 + Y ** 2 + Z ** 2)
+        H = np.sqrt(X ** 2 + Y ** 2)
 
-        Dm, Im, Fm = D.mean(axis=1), I.mean(axis=1), F.mean(axis=1)
-        eD, eI, eF = D.std(axis=1), I.std(axis=1), F.std(axis=1)
-        return Dm, Im, Fm, eD, eI, eF
+        eXYZ = np.sqrt( np.dot( A**2,  self.ecoeff.T**2  ) )
+        eX, eY, eZ = eXYZ
+
+        eD = np.degrees(  (1/H**2)*np.sqrt( (Y*eX)**2 + (X*eY)**2 )   )
+        eI = np.degrees(  (1/(F**2*H))*np.sqrt( (X*Z*eX)**2 + (Y*Z*eY)**2 + (H**2*eZ)**2 ) )
+        eF = (1/F)*np.sqrt( (X*eX)**2 + (Y*eY)**2 + (Z*eZ)**2 )
+
+        return D, I, F, eD, eI, eF
 
     def field_t(self, t, lat, lon):
         D, I, F, eD, eI, eF = self.psvc(lat, lon)
@@ -478,16 +483,3 @@ def frechet_basis(loc: np.ndarray,
             counter += 1
     # transpose to get frechet matrix
     return np.swapaxes(frechxyz, 0, 2)
-
-def gh2XYZ(gh, lat, lon):
-
-    nmax = int((-2 + np.sqrt(4 + 4 * gh.shape[1])) / 2)
-    coord = np.array([[np.radians(90 - lat), np.radians(lon), 6371.2]])  # Make a 2D array
-    A = frechet_basis(coord, nmax)
-    A = A.squeeze(0) # Remove the first dimension
-    XYZ = np.dot(gh, A.T)
-    X = XYZ[:, 0]
-    Y = XYZ[:, 1]
-    Z = XYZ[:, 2]
-    F = np.sqrt(X ** 2 + Y ** 2 + Z ** 2)
-    return X, Y, Z, F
