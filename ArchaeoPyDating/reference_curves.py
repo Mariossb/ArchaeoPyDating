@@ -1,41 +1,41 @@
 
 local_curves = {
 
-    'Iberia': [40.4, -3.7, 'psvc_iberia_Molina-Cardin et al_2018.dat'],
+    'Iberia (Molina-Cardín et al. 2018)': [40.4, -3.7, 'psvc_iberia_Molina-Cardin et al_2018.dat'],
 
-    'Iberia (Iron Age)': [40.4, -3.7, 'iberia_osete_2020.txt'],
+    'Iberia (Iron Age, Osete et al. 2020)': [40.4, -3.7, 'iberia_osete_2020.txt'],
 
-    'France (directional)': [48.9, 2.3, 'France_LeGoff2020.dat'],
+    'France (directional, Le Goff et al. 2020)': [48.9, 2.3, 'France_LeGoff2020.dat'],
 
-    'France (intensity)': [47.03, 4.83, 'FranceIntensityGenevey2021_F6b.txt'],
+    'France (intensity, Genevey et al. 2021)': [47.03, 4.83, 'FranceIntensityGenevey2021_F6b.txt'],
 
     'Western Europe (directional 1st millennium BC, Hervé et al. 2013)': [48.9, 2.3, 'we_dir1kbc.txt'],
 
     'Western Europe (intensity 1st millennium BC, Hervé et al. 2013)': [48.9, 2.3, 'we_int1kbc.txt'],
 
-    'Italy': [42.45, 12.03, 'Italy_TemaLanos2020.dat'],
+    'Italy (Tema and Lanos 2020)': [42.45, 12.03, 'Italy_TemaLanos2020.dat'],
 
-    'Great Britain (directional)': [52.44, -1.65, 'UK_Batt2017.dat'],
+    'Great Britain (directional, Batt et al. 2017)': [52.44, -1.65, 'UK_Batt2017.dat'],
 
-    'Bulgaria': [42.7, 23.3, 'bulgaria2014.dat'],
+    'Bulgaria (Kovacheva et al. 2014)': [42.7, 23.3, 'bulgaria2014.dat'],
 
-    'Cyprus': [35.17, 33.36, 'chipre.dat'],
+    'Cyprus (directional, Tema et al. 2021)': [35.17, 33.36, 'chipre.dat'],
 
-    'Azores': [38.5, -28, 'azores.dat'],
+    'Azores (Béguin et al. 2020)': [38.5, -28, 'azores.dat'],
 
-    'Europe Neolithic (directional)': [43.0, 11.0, 'Directional Neolithic.dat'],
+    'Europe Neolithic (directional, Carrancho et al. 2013)': [43.0, 11.0, 'Directional Neolithic.dat'],
 
-    'Hawaii': [20.24, -155.87, 'Hawaii_Tema2017.dat'],
+    'Hawaii (Tema et al. 2017)': [20.24, -155.87, 'Hawaii_Tema2017.dat'],
 
-    'New Zealand': [-40, 175, 'NZ11k.dat'],
+    'New Zealand (Turner and Corkill 2023)': [-40, 175, 'NZ11k.dat'],
 
-    'New Zealand (high resolution last 1 kyr)': [-40, 175, 'NZ1k.dat'],
+    'New Zealand (high resolution last 1 kyr, Turner and Corkill 2023)': [-40, 175, 'NZ1k.dat'],
 
-    'Mexico (directional)': [19.4, -99.1, 'Mexico_dir.dat'],
+    'Mexico (directional, García-Ruiz et al. 2022)': [19.4, -99.1, 'Mexico_dir.dat'],
 
-    'Mexico (intensity)': [19.4, -99.1, 'Mexico_int.txt'],
+    'Mexico (intensity, García-Ruiz et al. 2021)': [19.4, -99.1, 'Mexico_int.txt'],
 
-    'LAC.v.2.0 (Levant intensity)': [31.78, 35.21, 'LAC_V_2_0.txt'],
+    'LAC.v.2.0 (Levant intensity, Hassul et al. 2024)': [31.78, 35.21, 'LAC_V_2_0.txt'],
 
     'New One':[],
 
