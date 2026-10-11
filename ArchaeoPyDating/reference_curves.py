@@ -102,7 +102,7 @@ curves_references = {
         'SHAWQ-IronAge': 'SHAWQ-IronAge (Osete et al., 2020) [1300 BC - 0 AD]',
         'ArchKalmag14k.r': 'ArchKalmag14k.r (Schanner et al., 2022) [12000 BC - 1950 AD]',
         'BIGMUDI4k.1': 'BIGMUDI4k.1 (Arneitz et al., 2019) [2000 BC - 2000 AD]',
-        'SHAS.LIAA': 'SHAS.LIAA (Rivera et al. 2023) [12000 BC - 1900 AD]',
+        'SHAS.LIAA': 'SHAS.LIAA (Rivera et al. 2023) [1150 BC - 400 BC]',
     },
     "Regional Models": {
         'SCHA.DIF.4k': 'SCHA.DIF.4k (Pavón-Carrasco et al., 2021) [2000 BC - 1900 AD]',
