@@ -158,35 +158,23 @@ class Dating:
 
     def datingX(self, indicador):  # indicator: 'D', 'I', 'F'
         if indicador == 'D':
-            inter = np.arange(-pi, pi, radians(0.1))
             X, eX = self.dato.D, self.dato.eD
             Xc, eXc = self.curva.D, self.curva.eD
             X, eX, Xc, eXc = radians(X), radians(eX), radians(Xc), radians(eXc)
         if indicador == 'I':
-            inter = np.arange(-pi / 2, pi / 2, radians(0.1))
             X, eX = self.dato.I, self.dato.eI
             Xc, eXc = self.curva.I, self.curva.eI
             X, eX, Xc, eXc = radians(X), radians(eX), radians(Xc), radians(eXc)
         if indicador == 'F':
-            inter = np.arange(0, 100, 0.1)
             X, eX = self.dato.F, self.dato.eF
             Xc, eXc = self.curva.F, self.curva.eF
 
-        # data fun. probability
-        fd1 = exp(- (inter - X) ** 2 / (2 * eX ** 2)) / (eX * sqrt(2 * pi))
-        # intehracion
-        area = []
-        for xc, exc in zip(Xc, eXc):
-            fd2 = exp(- (inter - xc) ** 2 / (2 * exc ** 2)) / (exc * sqrt(2 * pi))
-            pro = fd1 * fd2
-            areai = np.trapezoid(pro, inter)  # trapezoidal integration
-            area.append(areai)
-        area = np.array(area)
-        # normalization en tiempo orofinal de la curva
-        area = area / np.trapezoid(area, self.curva.t)
-        # interpolation
-        cs = CubicSpline(self.curva.t, abs(area))
-        z = cs(self.t)
+        diff = X - Xc
+        var = eX**2 + eXc**2
+        area = exp(-diff ** 2 / (2 * var)) / sqrt(2 * pi * var)
+        
+        cs = CubicSpline(self.curva.t, area)
+        z = np.clip(cs(self.t), 0, None)  #clip avoids negative values
         z = z / np.trapezoid(z, self.t)
         return z
 
