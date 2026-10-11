@@ -2,13 +2,12 @@ from setuptools import setup, find_packages
 
 setup(
     name='ArchaeoPyDating',  
-    version='0.2',  
+    version='0.3',  
     packages=find_packages(),  
     install_requires=[                    
         'numpy',                          
         'matplotlib',                     
-        'scipy',                          
-        'future',                         
+        'scipy',                       
         'pyshp', 
         'pyshtools',                         
     ],
@@ -17,6 +16,6 @@ setup(
     author_email='marioser@ucm.es',  
     url='https://github.com/Mariossb/ArchaeoPyDating',
     package_data={
-        'ArchaeoPyDating': ['curves/**/*', 'external/*'],
+        'ArchaeoPyDating': ['curves/*/*', 'external/*'],
     }
 )

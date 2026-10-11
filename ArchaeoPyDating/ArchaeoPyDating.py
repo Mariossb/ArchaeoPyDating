@@ -313,7 +313,7 @@ class Dating:
         axfcomb.set_ylabel('Combined PDF', multialignment='center')
         axfcomb.set_xlabel('Year')
 
-        sf = shapefile.Reader('external/ne_50m_coastline.shp')
+        sf = shapefile.Reader(os.path.join(dir_path, 'external', 'ne_50m_coastline.shp'))
         for shape in sf.shapes():
             points = shape.points 
             x, y = zip(*points)  
