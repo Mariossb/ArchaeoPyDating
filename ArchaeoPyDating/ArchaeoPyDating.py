@@ -5,7 +5,6 @@ from scipy.interpolate import CubicSpline, griddata
 import shapefile
 import warnings
 from .reference_curves import *
-from past.utils import old_div
 import os
 from pyshtools import legendre
 
@@ -154,6 +153,9 @@ class Dating:
         self.dato = dato
         self.curva = curva
 
+        # eje temporal comun
+        self.t = np.arange(self.curva.t[0], self.curva.t[-1] + 5, 5)
+
     def datingX(self, indicador):  # indicator: 'D', 'I', 'F'
         if indicador == 'D':
             inter = np.arange(-pi, pi, radians(0.1))
@@ -172,78 +174,70 @@ class Dating:
 
         # data fun. probability
         fd1 = exp(- (inter - X) ** 2 / (2 * eX ** 2)) / (eX * sqrt(2 * pi))
-        # curve fun. probability (depends on time)
-        # product data fun. and curve fun.
+        # intehracion
         area = []
         for xc, exc in zip(Xc, eXc):
             fd2 = exp(- (inter - xc) ** 2 / (2 * exc ** 2)) / (exc * sqrt(2 * pi))
             pro = fd1 * fd2
-            areai = np.trapz(pro, inter)  # trapezoidal integration
-            area = np.append(area, areai)
-        # normalization
-        area = area / np.trapz(area, self.curva.t)
-        # interpolation 1yr
-        t = np.arange(self.curva.t[0], self.curva.t[-1] + 1, 1)
+            areai = np.trapezoid(pro, inter)  # trapezoidal integration
+            area.append(areai)
+        area = np.array(area)
+        # normalization en tiempo orofinal de la curva
+        area = area / np.trapezoid(area, self.curva.t)
+        # interpolation
         cs = CubicSpline(self.curva.t, abs(area))
-        z = cs(t)
+        z = cs(self.t)
+        z = z / np.trapezoid(z, self.t)
         return z
 
     def zcomb(self, *args):
-        aux = 1
-        for z in args:
-            aux = aux * z
-        t = np.arange(self.curva.t[0], self.curva.t[-1] + 1, 1)
-        z = aux / np.trapz(aux, t)
+        z = np.ones_like(self.t)
+        for zi in args:
+            z *= zi
+        # normalizar
+        z = z / np.trapezoid(z, self.t)
         return z
 
     def pb(self, z, gp):
-        '''z from Dating.datingX()'''
-        H = np.linspace(min(z), max(z), 501)
-        t = np.arange(self.curva.t[0], self.curva.t[-1] + 1, 1)
+        H = np.linspace(np.min(z), np.max(z), 200)
+        
         area = []
         for h in H:
-            areai = np.trapz(z * [z >= h], t)
-            area = np.append(area, areai)
+            mask = z >= h
+            areai = np.trapezoid(z * mask, self.t)
+            area.append(areai)
+        area = np.array(area)
+
         pm = H[area <= gp / 100]
         pM = H[area >= gp / 100]
-        if (pm.size == 0) | (pM.size == 0):
-            print("An archaeomagnetic dating with these data is not possible")
-            return
+        if len(pm) == 0 or len(pM) == 0:
+            raise ValueError("Dating not possible with these data")
         h = (pm[0] + pM[-1]) / 2
         return h
 
     def pb_h(self, z, h):
-        '''z from Dating.datingX() and h from Dating.pb()'''
-        # intersection of z and h
-        # new function and its solutions
-        t = np.arange(self.curva.t[0], self.curva.t[-1] + 1, 1)
-        f = CubicSpline(t, z - h)
-        sol = f.roots()
-        # no solutions outside the interval
-        sol = sol[(sol > t[0]) & (sol < t[-1])]
-        # search if difference of sol are positive or negative
-        # to know if they represent lower or upper bounds
-        if f(sol[0], 1) > 0:
-            tmin = sol[::2]
-            tmax = sol[1::2]
-            # if the last interval does not end, I end it at the time maximum.
-            if len(tmin) > len(tmax):
-                tmax = np.append(tmax, t[-1])
-        if f(sol[0], 1) < 0:
-            tmin = sol[1::2]
-            tmax = sol[::2]
-            # if the first interval does not start, I start it at the minimum time interval
-            if len(tmin) < len(tmax):
-                tmin = np.append(t[0], tmin)
-        # it could be that len of tmin == tmax because it neither begins nor ends.
-        if tmin[0] > tmax[0]:
-            tmax = np.append(tmax, t[-1])
-            tmin = np.append(t[0], tmin)
-        # datings
-        dat = {}
-        for i in range(len(tmin)):
-            dat["Dating result {0}".format(i + 1)] = [int(round(tmin[i] / 5) * 5), int(round(tmax[i] / 5) * 5)]
-        result = {key: [dat[key][0], dat[key][1]] for key in dat}
+        mask = z >= h
+
+        intervals = []
+        start = None
+
+        for i in range(len(self.t)):
+            if mask[i] and start is None:
+                start = self.t[i]
+            elif not mask[i] and start is not None:
+                end = self.t[i-1]
+                intervals.append((start, end))
+                start = None
+
+        # cerrar último intervalo si queda abierto
+        if start is not None:
+            intervals.append((start, self.t[-1]))
+
+        # 
+        result = {}
+        for i, (t1, t2) in enumerate(intervals):
+            result[f"Dating result {i+1}"] = [int(t1), int(t2)]
+
         return result
 
     def plot(self, zD=None, zI=None, zF=None, z=None,
@@ -283,7 +277,7 @@ class Dating:
         Xc = [self.curva.D, self.curva.I, self.curva.F]
         eXc = [self.curva.eD, self.curva.eI, self.curva.eF]
         zX = [zD, zI, zF]
-        tz = np.arange(self.curva.t[0], self.curva.t[-1] + 1, 1)
+        tz = self.t
         H = [hD, hI, hF]
 
         # plot the curves with the data
@@ -334,10 +328,33 @@ class Dating:
 
         # hide ax with text
         axdat.axis('off')
+        #### text ####
+        def BCADyear(year):
+            if year > 0:
+                return str(year) + ' AD'
+            else:
+                return str(abs(year)) + ' BC'
+        #text = 'Site: ' + self.dato.sitename + '\n\nReference Curve: ' + self.curva.name + '\n\nBetween t = ' + BCADyear(
+        #    round(min(self.curva.t))) + ' and ' + BCADyear(round(max(self.curva.t)))
+
+        
+        result = self.pb_h(z, h)
+
+        if len(result)<=6:
+
+            text = '\n\n'+'Dating results:'+'\n\n'
+            counter = 0
+            for key, value in result.items():
+                m = BCADyear(value[0])
+                M = BCADyear(value[1])
+                text += m+' - '+M+';  '
+                counter += 1
+                if counter % 3 ==0: text += '\n'
+
+            axdat.text(0.5, 0.2, text, fontsize=20, fontweight='bold', ha='center')
         
         
         plt.tight_layout()
-        plt.show()
         return fig
 
 
@@ -388,8 +405,11 @@ class Curve:
                 self.t, self.D, self.I, self.eD, self.eI, self.F, self.eF = self.matriz.T
             if self.matriz.shape[1] == 5:
                 self.t, self.D, self.I, self.eD, self.eI = self.matriz.T
+                self.F, self.eF = np.zeros(self.matriz.shape[0]), np.zeros(self.matriz.shape[0])
             if self.matriz.shape[1] == 3:
                 self.t, self.F, self.eF = self.matriz.T
+                self.D, self.I, self.eD, self.eI = np.zeros(self.matriz.shape[0]), np.zeros(self.matriz.shape[0]), np.zeros(self.matriz.shape[0]), np.zeros(self.matriz.shape[0])
+
 
         # interpolte to 10 yr
         t = np.arange(self.t[0], self.t[-1] + 10, 10)
@@ -483,3 +503,4 @@ def frechet_basis(loc: np.ndarray,
             counter += 1
     # transpose to get frechet matrix
     return np.swapaxes(frechxyz, 0, 2)
+
