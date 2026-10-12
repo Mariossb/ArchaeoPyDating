@@ -59,7 +59,7 @@ If you want to create a directory within which you can create a virtual Python e
    pip install git+https://github.com/Mariossb/ArchaeoPyDating.git
    ```
 
-5. **Use it**:  Now, you can use the objects and functions of the ArchaeoPyDating module within this virtual environment. To import them into your .py files, include the following line at the beginning (see this [notebook](APD_example.ipynb) for examples):
+5. **Use it**:  Now, you can use the objects and functions of the ArchaeoPyDating module within this virtual environment. To import them into your .py files, include the following line at the beginning (see this [notebook](examples/APD_example.ipynb) for examples):
    ```python
    import ArchaeoPyDating as apd
    ```
