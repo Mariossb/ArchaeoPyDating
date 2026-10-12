@@ -70,7 +70,7 @@ If you want to create a directory within which you can create a virtual Python e
 
 - [Original paper](https://doi.org/10.1111/arcm.13009)
 
-- [Notebook showing examples of the Python module's use](APD_example.ipynb)
+- [Notebook showing examples of the Python module's use](examples/APD_example.ipynb)
 
 ## Contact ##
 
