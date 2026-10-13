@@ -187,20 +187,15 @@ class Dating:
         return z
 
     def pb(self, z, gp):
-        H = np.linspace(np.min(z), np.max(z), 200)
-        
-        area = []
-        for h in H:
-            mask = z >= h
-            areai = np.trapezoid(z * mask, self.t)
-            area.append(areai)
-        area = np.array(area)
-
-        pm = H[area <= gp / 100]
-        pM = H[area >= gp / 100]
-        if len(pm) == 0 or len(pM) == 0:
+        '''Height h of the PDF whose region z>=h encloses gp% of the probability'''
+        if not np.all(np.isfinite(z)) or np.max(z)<=0:
             raise ValueError("Dating not possible with these data")
-        h = (pm[0] + pM[-1]) / 2
+        
+        order = np.argsort(z)[::-1] #indices of z form highest to lowest
+        cum = np.cumsum(z[order]) #probability accumulated in that order
+        cum /= cum[-1] #from 0 to 1
+        k = np.searchsorted(cum, gp/100)
+        h = z[order[k]]
         return h
 
     def pb_h(self, z, h):
