@@ -429,8 +429,8 @@ def distance(lat1, lon1, lat2, lon2):
 
 
 def cart2dir(X, Y, Z):
-    D = np.degrees(np.arctan(Y / X))
-    I = np.degrees(np.arctan(Z / np.sqrt(X ** 2 + Y ** 2)))
+    D = np.degrees(np.arctan2(Y, X))
+    I = np.degrees(np.arctan2(Z, np.sqrt(X ** 2 + Y ** 2)))
     return D, I
 
 def frechet_basis(loc: np.ndarray,
