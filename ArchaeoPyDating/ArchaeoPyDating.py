@@ -7,6 +7,7 @@ import warnings
 from .reference_curves import *
 import os
 from pyshtools import legendre
+from functools import lru_cache
 
 warnings.filterwarnings("ignore")
 
@@ -223,11 +224,11 @@ class Dating:
 
         return result
 
+    @plt.rc_context({'font.size': 14})
     def plot(self, zD=None, zI=None, zF=None, z=None,
         hD=None, hI=None, hF=None, h=None):
     
-        fig = plt.figure(figsize=(18, 12), dpi=600)
-        plt.rcParams.update({'font.size': 14})
+        fig = plt.figure(figsize=(18, 12))
         # create grid with all
         gs = fig.add_gridspec(nrows=3, ncols=2)
         # within that grid create three grids for the left side.
@@ -296,15 +297,13 @@ class Dating:
         axfcomb.set_ylabel('Combined PDF', multialignment='center')
         axfcomb.set_xlabel('Year')
 
-        sf = shapefile.Reader(os.path.join(dir_path, 'external', 'ne_50m_coastline.shp'))
-        for shape in sf.shapes():
-            points = shape.points 
-            x, y = zip(*points)  
-            axmapa.plot(x, y, 'k-', linewidth=1) 
+        coastlon, coastlat = coastlines()
+        axmapa.plot(coastlon, coastlat, 'k-', linewidth=1)
+
         # Add points for the locations
         axmapa.scatter(self.dato.lon, self.dato.lat, color='blue', s=100, label='Data', zorder=5)
         axmapa.scatter(self.curva.lon, self.curva.lat, color='orange', s=100, marker='*', label='Curve', zorder=5)
-#
+
         axmapa.set_xlim(self.dato.lon - 30, self.dato.lon + 30)
         axmapa.set_ylim(self.dato.lat - 20, self.dato.lat + 20)
         axmapa.legend()
@@ -317,9 +316,7 @@ class Dating:
                 return str(year) + ' AD'
             else:
                 return str(abs(year)) + ' BC'
-        #text = 'Site: ' + self.dato.sitename + '\n\nReference Curve: ' + self.curva.name + '\n\nBetween t = ' + BCADyear(
-        #    round(min(self.curva.t))) + ' and ' + BCADyear(round(max(self.curva.t)))
-
+        
         
         result = self.pb_h(z, h)
 
@@ -487,3 +484,13 @@ def frechet_basis(loc: np.ndarray,
     # transpose to get frechet matrix
     return np.swapaxes(frechxyz, 0, 2)
 
+@lru_cache(maxsize=1)
+def coastlines():
+    sf = shapefile.Reader(os.path.join(dir_path, 'external', 'ne_50m_coastline.shp'))
+    x, y = [], []
+    for shape in sf.shapes():
+        px, py = zip(*shape.points)
+        x += list(px) + [np.nan]
+        y += list(py) + [np.nan]
+    return np.array(x), np.array(y)
+        
