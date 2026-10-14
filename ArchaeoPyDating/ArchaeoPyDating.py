@@ -8,7 +8,7 @@ import os
 from pyshtools import legendre
 from functools import lru_cache
 
-__all__ = ['Curve', 'Data', 'Dating', 'Model', 'RegionalModel']
+__all__ = ['Curve', 'Data', 'Dating', 'Model', 'RegionalModel', 'available_psvc']
 
 # directory of this script
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -319,14 +319,7 @@ class Dating:
 
         # hide ax with text
         axdat.axis('off')
-        #### text ####
-        def BCADyear(year):
-            if year > 0:
-                return str(year) + ' AD'
-            else:
-                return str(abs(year)) + ' BC'
-        
-        
+
         result = self.pb_h(z, h)
 
         if len(result)<=6:
@@ -492,4 +485,37 @@ def coastlines():
         x += list(px) + [np.nan]
         y += list(py) + [np.nan]
     return np.array(x), np.array(y)
-        
+
+def BCADyear(year):
+    '''Year as text in BC/AD.'''
+    year = int(round(year))
+    return f'{-year} BC' if year < 0 else f'{year} AD'      
+
+def available_psvc():
+    '''Print the available curves and models, with the elements and
+    the time range read from their files.'''
+    elements_by_columns = {7: 'D,I,F', 5: 'D,I', 3: 'F'}
+    sections = [('local', 'Local PSVCs'), ('global', 'Global Models'),
+                ('regional', 'Regional Models')]
+    for kind, title in sections:
+        print(f'\n{title}:')
+        for name, c in reference_curves.items():
+            if c['type'] != kind:
+                continue
+            if kind == 'local':
+                m = np.atleast_2d(np.loadtxt(os.path.join(dir_path, 'curves', 'local', c['file'])))
+                t, elements = m[:, 0], elements_by_columns.get(m.shape[1], '?')
+            elif kind == 'global':
+                t = np.loadtxt(os.path.join(dir_path, 'curves', 'gmodel', c['files'][2]))
+                elements = 'D,I,F'
+            else:
+                t = np.loadtxt(os.path.join(dir_path, 'curves', 'rmodel', c['file']),
+                               usecols=0, skiprows=1)
+                elements = 'D,I,F'
+            line = f'- {name}'
+            if 'reference' in c:
+                line += f" ({c['reference']})"
+            line += f': [{elements}] [{BCADyear(t.min())} - {BCADyear(t.max())}]'
+            if 'note' in c:
+                line += f" ({c['note']})"
+            print(line)
