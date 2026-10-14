@@ -177,7 +177,8 @@ class Dating:
         
         if X is None or eX is None:
             raise ValueError(f"The data has no value or error for {indicador}")
-
+        if Xc is None or eXc is None:
+            raise ValueError(f"The curve has no {indicador}")
         if indicador == 'D':
             Xc = X - ((X - Xc + 180) % 360 - 180)  # curve values on the same turn as X [0,360] or [-180,180]
         
@@ -350,20 +351,31 @@ class Dating:
 
 
 class Curve:
-    def __init__(self, local=None, gmodel=None, rmodel=None, lat=None, lon=None, newpsvc=None):
-        if local:
-            self.name = local
-            self.matriz = np.loadtxt(os.path.join(dir_path, 'curves', 'local', local_curves[local][2]))
-            self.lat, self.lon = local_curves[local][0:2]
-            if self.matriz.shape[1] == 7:
-                self.t, self.D, self.I, self.eD, self.eI, self.F, self.eF = self.matriz.T
-            if self.matriz.shape[1] == 5:
-                self.t, self.D, self.I, self.eD, self.eI = self.matriz.T
-                self.F, self.eF = np.zeros(self.matriz.shape[0]), np.zeros(self.matriz.shape[0])
-            if self.matriz.shape[1] == 3:
-                self.t, self.F, self.eF = self.matriz.T
-                self.D, self.I, self.eD, self.eI = np.zeros(self.matriz.shape[0]), np.zeros(self.matriz.shape[0]), np.zeros(self.matriz.shape[0]), np.zeros(self.matriz.shape[0])
+    def _read_columns(self, source):
+        '''Assign the columns of a curve: 7 (t, D, I, eD, eI, F, eF),
+        5 (t, D, I, eD, eI) or 3 (t, F, eF). Missing elements are None.'''
+        matriz = np.atleast_2d(np.loadtxt(source))
+        ncol = matriz.shape[1]
+        self.D = self.I = self.eD = self.eI = self.F = self.eF = None
+        if ncol == 7:
+            self.t, self.D, self.I, self.eD, self.eI, self.F, self.eF = matriz.T
+        elif ncol == 5:
+            self.t, self.D, self.I, self.eD, self.eI = matriz.T
+        elif ncol == 3:
+            self.t, self.F, self.eF = matriz.T
+        else:
+            raise ValueError(f"A curve must have 7, 5 or 3 columns, not {ncol}")
+        self.matriz = matriz
 
+    def __init__(self, local=None, gmodel=None, rmodel=None, lat=None, lon=None, newpsvc=None):
+        if sum(x is not None for x in (local, gmodel, rmodel, newpsvc)) != 1:
+            raise ValueError("Give one curve/model")
+        if local:
+            if not local_curves.get(local):
+                raise ValueError(f"Unknown local curve: {local}")
+            self.name = local
+            self.lat, self.lon = local_curves[local][0:2]
+            self._read_columns(os.path.join(dir_path, 'curves', 'local', local_curves[local][2]))
         if gmodel:
             mod = Model(gmodel)
             self.name = gmodel + '  (global model)'
@@ -371,7 +383,6 @@ class Curve:
             self.D, self.I, self.F, self.eD, self.eI, self.eF = mod.psvc(lat, lon)
             self.lat, self.lon = lat, lon
             self.matriz = np.column_stack([self.t, self.D, self.I, self.eD, self.eI, self.F, self.eF])
-
         if rmodel:
             mod = RegionalModel(rmodel)
             self.name = rmodel + '  (regional model)'
@@ -381,47 +392,27 @@ class Curve:
             self.matriz = np.column_stack([self.t, self.D, self.I, self.eD, self.eI, self.F, self.eF])
             self.or_lat, self.or_lon = mod.or_lat, mod.or_lon
             self.angular_distance = mod.angular_distance
-
         if newpsvc:
-
-            aux = np.asarray(newpsvc)
-            aux2 = np.zeros([len(aux), len(np.fromstring(aux[0], dtype=float, sep=' '))])
-            for i in range(len(aux)):
-                aux2[i] = np.fromstring(aux[i], dtype=float, sep=' ')
-            self.matriz = aux2
-
+            lines = [l.decode() if isinstance(l, bytes) else l for l in newpsvc]
             self.name = 'Private curve'
             self.lat, self.lon = lat, lon
-            if self.matriz.shape[1] == 7:
-                self.t, self.D, self.I, self.eD, self.eI, self.F, self.eF = self.matriz.T
-            if self.matriz.shape[1] == 5:
-                self.t, self.D, self.I, self.eD, self.eI = self.matriz.T
-                self.F, self.eF = np.zeros(self.matriz.shape[0]), np.zeros(self.matriz.shape[0])
-            if self.matriz.shape[1] == 3:
-                self.t, self.F, self.eF = self.matriz.T
-                self.D, self.I, self.eD, self.eI = np.zeros(self.matriz.shape[0]), np.zeros(self.matriz.shape[0]), np.zeros(self.matriz.shape[0]), np.zeros(self.matriz.shape[0])
+            self._read_columns(lines)
 
-
-        # interpolte to 10 yr
+        # interpolate to 10 yr
         t = np.arange(self.t[0], self.t[-1] + 10, 10)
-        d = CubicSpline(self.t, self.D);
-        i = CubicSpline(self.t, self.I);
-        f = CubicSpline(self.t, self.F)
-        ed = CubicSpline(self.t, self.eD);
-        ei = CubicSpline(self.t, self.eI);
-        ef = CubicSpline(self.t, self.eF)
-        self.D, self.I, self.F = d(t), i(t), f(t)
-        self.eD, self.eI, self.eF = ed(t), ei(t), ef(t)
+        for name in ('D', 'I', 'F', 'eD', 'eI', 'eF'):
+            values = getattr(self, name)
+            if values is not None:
+                setattr(self, name, CubicSpline(self.t, values)(t))
         self.t = t
 
     def int_temp(self, tmin, tmax):  # if a time interval is defined
-        self.D = self.D[(self.t >= tmin) & (self.t <= tmax)];
-        self.eD = self.eD[(self.t >= tmin) & (self.t <= tmax)]
-        self.I = self.I[(self.t >= tmin) & (self.t <= tmax)];
-        self.eI = self.eI[(self.t >= tmin) & (self.t <= tmax)]
-        self.F = self.F[(self.t >= tmin) & (self.t <= tmax)];
-        self.eF = self.eF[(self.t >= tmin) & (self.t <= tmax)]
-        self.t = self.t[(self.t >= tmin) & (self.t <= tmax)]
+        mask = (self.t >= tmin) & (self.t <= tmax)
+        for name in ('D', 'I', 'F', 'eD', 'eI', 'eF'):
+            values = getattr(self, name)
+            if values is not None:
+                setattr(self, name, values[mask])
+        self.t = self.t[mask]
 
 
 def distance(lat1, lon1, lat2, lon2):
