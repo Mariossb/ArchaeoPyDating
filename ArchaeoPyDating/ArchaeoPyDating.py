@@ -160,9 +160,7 @@ class Dating:
     def __init__(self, dato, curva):
         self.dato = dato
         self.curva = curva
-
-        # eje temporal comun
-        self.t = np.arange(self.curva.t[0], self.curva.t[-1] + 5, 5)
+        self.t = self.curva.t
 
     def datingX(self, indicador):  # indicator: 'D', 'I', 'F'
         if indicador == 'D':
@@ -184,10 +182,7 @@ class Dating:
         
         diff = X - Xc
         var = eX**2 + eXc**2
-        area = exp(-diff ** 2 / (2 * var)) / sqrt(2 * pi * var)
-        
-        cs = CubicSpline(self.curva.t, area)
-        z = np.clip(cs(self.t), 0, None)  #clip avoids negative values
+        z = exp(-diff ** 2 / (2 * var)) / sqrt(2 * pi * var)
         z = z / np.trapezoid(z, self.t)
         return z
 
@@ -211,7 +206,7 @@ class Dating:
         h = z[order[k]]
         return h
 
-    def pb_h(self, z, h):
+    def pb_h(self, z, h, step=5):
         mask = z >= h
 
         intervals = []
@@ -225,13 +220,22 @@ class Dating:
                 intervals.append((start, end))
                 start = None
 
-        # cerrar último intervalo si queda abierto
+        # close last interval if open
         if start is not None:
             intervals.append((start, self.t[-1]))
 
-        # 
+        # round results and join close intervals
+        rounded = []
+        for t1, t2 in intervals:
+            t1 = step * np.floor(t1/step)
+            t2 = step * np.ceil(t2/step)
+            if rounded and t1 <= rounded[-1][1]:
+                rounded[-1][1] = t2
+            else:
+                rounded.append([t1, t2])
+
         result = {}
-        for i, (t1, t2) in enumerate(intervals):
+        for i, (t1, t2) in enumerate(rounded):
             result[f"Dating result {i+1}"] = [int(t1), int(t2)]
 
         return result
@@ -398,8 +402,8 @@ class Curve:
             self.lat, self.lon = lat, lon
             self._read_columns(lines)
 
-        # interpolate to 10 yr
-        t = np.arange(self.t[0], self.t[-1] + 10, 10)
+        # interpolate to 1 yr
+        t = np.arange(self.t[0], self.t[-1] + 0.5, 1)
         for name in ('D', 'I', 'F', 'eD', 'eI', 'eF'):
             values = getattr(self, name)
             if values is not None:
