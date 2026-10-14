@@ -3,13 +3,10 @@ from numpy import pi, cos, sin, tan, arctan, arccos, sqrt, exp, radians, degrees
 import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline, griddata
 import shapefile
-import warnings
 from .reference_curves import *
 import os
 from pyshtools import legendre
 from functools import lru_cache
-
-warnings.filterwarnings("ignore")
 
 # directory of this script
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -255,7 +252,7 @@ class Dating:
         axdat = fig.add_subplot(gs[2, 1])
 
         # define the things to draw
-        ylabel = ['Declination [$\degree$]', 'Inclination [$\degree$]', 'Intensity [$\mu$T]']
+        ylabel = [r'Declination [$\degree$]', r'Inclination [$\degree$]', r'Intensity [$\mu$T]']
         X = [self.dato.D, self.dato.I, self.dato.F]
         eX = [self.dato.eD, self.dato.eI, self.dato.eF]
         Xc = [self.curva.D, self.curva.I, self.curva.F]
