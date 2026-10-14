@@ -178,6 +178,9 @@ class Dating:
         if X is None or eX is None:
             raise ValueError(f"The data has no value or error for {indicador}")
 
+        if indicador == 'D':
+            Xc = X - ((X - Xc + 180) % 360 - 180)  # curve values on the same turn as X [0,360] or [-180,180]
+        
         diff = X - Xc
         var = eX**2 + eXc**2
         area = exp(-diff ** 2 / (2 * var)) / sqrt(2 * pi * var)
