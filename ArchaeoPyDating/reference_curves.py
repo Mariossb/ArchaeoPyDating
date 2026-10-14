@@ -1,3 +1,5 @@
+__all__ = ['local_curves', 'global_models', 'regional_models',
+ 'curves', 'curves_references', 'available_psvc']
 
 local_curves = {
 
@@ -76,25 +78,25 @@ curves = {
 
 
 curves_references = {
-    "Local PSVCs": {
-        'Iberia': 'Molina-Cardín et al. (2018) [D,I,F] [1000 BC - 1900 AD]',
-        'Iberia (Iron Age)': 'Osete et al. (2020) [D,I,F] [1100 BC - 100 BC]',
-        'France (directional)': 'Le Goff et al. (2020) [D,I] [70 BC - 1700 AD]',
-        'France (intensity)': 'Genevey et al. (2021) [F] [300 AD - 1850 AD]',
-        'Western Europe (directional 1st millennium BC, Hervé et al. 2013)': 'Hervé et al. (2013a) [D,I] [1500 BC - 200 AD]',
-        'Western Europe (intensity 1st millennium BC, Hervé et al. 2013)': 'Hervé et al. (2013b) [F] [1500 BC - 200 AD]',
-        'Italy': 'Tema and Lanos (2021) [D,I,F] [900 BC - 1980 AD] (F only for [700 BC - 1800 AD])',
-        'Great Britain (directional)': 'Batt et al. (2017) [D,I] [6000 BC - 1980 AD]',
-        'Bulgaria': 'Kovacheva et al. (2014) [D,I,F] [6000 BC - 1800 AC]',
-        'Cyprus': 'Tema et al. (2021) [D,I] [2000 BC - 1900 AC]',
-        'Azores': 'Béguin et al. (2020) [D,I,F] [500 BC - 2000 AD]',
-        'Europe Neolithic (directional)': 'Carrancho et al. (2013) [D,I] [6000 BC - 1000 AD]',
-        'Hawaii': 'Tema et al. (2017) [D,I,F] [8000 BC - 1950 AD]',
-        'New Zealand': 'Turner and Corkill (2023) [D,I,F] [9325 BC - 1875 AD]',
-        'New Zealand (high resolution last 1 kyr)': 'Turner and Corkill (2023) [D,I,F] [1025 AD - 2000 AD]',
-        'Mexico (directional)': 'García-Ruiz et al. (2022)[D,I] [1472 BC - 1947 AD]',
-        'Mexico (intensity)': 'García-Ruiz et al. (2021)[F] [1600 BC - 1946 AD]',
-        'LAC.v.2.0 (Levant intensity)': 'Hassul et al. (2024) [F] [3200 BC - 550 AD]',
+     "Local PSVCs": {
+        'Iberia (Molina-Cardín et al. 2018)': '[D,I,F] [1000 BC - 1900 AD]',
+        'Iberia (Iron Age, Osete et al. 2020)': '[D,I,F] [1100 BC - 100 BC]',
+        'France (directional, Le Goff et al. 2020)': '[D,I] [70 BC - 1700 AD]',
+        'France (intensity, Genevey et al. 2021)': '[F] [300 AD - 1850 AD]',
+        'Western Europe (directional 1st millennium BC, Hervé et al. 2013)': '[D,I] [1500 BC - 200 AD]',
+        'Western Europe (intensity 1st millennium BC, Hervé et al. 2013)': '[F] [1500 BC - 200 AD]',
+        'Italy (Tema and Lanos 2020)': '[D,I,F] [900 BC - 1980 AD] (F only for [700 BC - 1800 AD])',
+        'Great Britain (directional, Batt et al. 2017)': '[D,I] [6000 BC - 1980 AD]',
+        'Bulgaria (Kovacheva et al. 2014)': '[D,I,F] [6000 BC - 1800 AD]',
+        'Cyprus (directional, Tema et al. 2021)': '[D,I] [2000 BC - 1900 AD]',
+        'Azores (Béguin et al. 2020)': '[D,I,F] [500 BC - 2000 AD]',
+        'Europe Neolithic (directional, Carrancho et al. 2013)': '[D,I] [6000 BC - 1000 AD]',
+        'Hawaii (Tema et al. 2017)': '[D,I,F] [8000 BC - 1950 AD]',
+        'New Zealand (Turner and Corkill 2023)': '[D,I,F] [9325 BC - 1875 AD]',
+        'New Zealand (high resolution last 1 kyr, Turner and Corkill 2023)': '[D,I,F] [1025 AD - 2000 AD]',
+        'Mexico (directional, García-Ruiz et al. 2022)': '[D,I] [1472 BC - 1947 AD]',
+        'Mexico (intensity, García-Ruiz et al. 2021)': '[F] [1600 BC - 1946 AD]',
+        'LAC.v.2.0 (Levant intensity, Hassul et al. 2024)': '[F] [3200 BC - 550 AD]',
     },
     "Global Models": {
         'SHA.DIF.14k': 'SHA.DIF.14k (Pavón-Carrasco et al., 2014) [12000 BC - 1900 AD]',
