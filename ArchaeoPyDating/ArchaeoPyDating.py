@@ -111,6 +111,8 @@ class Data:
         
 
     def cvp(self, nlat, nlon):
+        if self.D is None or self.I is None:
+            raise ValueError("cvp needs both declination and inclination")
         # radians
         lat, lon, D, I, nlat, nlon = radians([self.lat, self.lon, self.D, self.I, nlat, nlon])
         self.Dold, self.Iold = np.degrees(D), np.degrees(I)
@@ -132,7 +134,8 @@ class Data:
 
     def vadm(self, nlat):
         # Translate the intensity data using the Virtual Axial Dipole Moment
-        # radians
+        if self.F is None:
+            raise ValueError("vadm needs intensity")
         lat, nlat = radians([self.lat, nlat])
         # from lat 2 colat
         clat, nclat = pi / 2 - np.array([lat, nlat])
@@ -144,7 +147,8 @@ class Data:
         # Translate the intensity data using the Virtual Dipole Moment
         # you know inclination and intensity in one point
         # and only inclination in a new point
-        # radians
+        if self.F is None or self.I is None or not hasattr(self, 'Iold'):
+            raise ValueError("vdm needs intensity and inclination, relocated first with cvp")
         I, In = radians(np.array([self.Iold, self.I]))
         clat, nclat = arctan(2 / tan([I, In]))
         Fn = self.F * sqrt((1 + 3 * cos(nclat) ** 2) / (1 + 3 * cos(clat) ** 2))
@@ -164,14 +168,15 @@ class Dating:
         if indicador == 'D':
             X, eX = self.dato.D, self.dato.eD
             Xc, eXc = self.curva.D, self.curva.eD
-            X, eX, Xc, eXc = radians(X), radians(eX), radians(Xc), radians(eXc)
         if indicador == 'I':
             X, eX = self.dato.I, self.dato.eI
             Xc, eXc = self.curva.I, self.curva.eI
-            X, eX, Xc, eXc = radians(X), radians(eX), radians(Xc), radians(eXc)
         if indicador == 'F':
             X, eX = self.dato.F, self.dato.eF
             Xc, eXc = self.curva.F, self.curva.eF
+        
+        if X is None or eX is None:
+            raise ValueError(f"The data has no value or error for {indicador}")
 
         diff = X - Xc
         var = eX**2 + eXc**2
