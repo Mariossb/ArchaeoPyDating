@@ -92,17 +92,23 @@ class RegionalModel:
 
 
 class Data:
-    def __init__(self, D=0, I=0, a95=0, F=0, eF=0, lat=None, lon=None, sitename='Site'):
+    def __init__(self, D=None, I=None, a95=None, F=None, eF=None, lat=None, lon=None, sitename='Site'):
         self.D = D
         self.I = I
         self.a95 = a95
-        self.eI = self.a95 / 2.45  # (65%) Lanos et al. 2005; Suttie and Nilsson, 2019; Nilsson and Suttie, 2021
-        self.eD = self.eI / cos(radians(self.I))
         self.F = F
         self.eF = eF
         self.lat = lat
         self.lon = lon
         self.sitename = sitename
+
+        # direction errors (65%) Lanos et al. 2005; Suttie and Nilsson, 2019; Nilsson and Suttie, 2021
+        self.eI = a95 / 2.45  if a95 is not None else None
+        if self.eI is not None and I is not None:
+            self.eD = self.eI / cos(radians(I))
+        else:
+            self.eD = None   
+        
 
     def cvp(self, nlat, nlon):
         # radians
