@@ -64,31 +64,26 @@ class RegionalModel:
         self.matriz = np.delete(self.matriz, 0, 0)  # para quitar la cabecera
         self.t = np.unique(self.matriz[:, 0])
 
-    def psvc(self, nlat, nlon):
-        Dc = np.zeros(len(self.t));
-        Ic = Dc.copy();
-        Fc = Dc.copy();
-        eDc = Dc.copy();
-        eIc = Dc.copy();
-        eFc = Dc.copy();
-        Xc = [Dc, Ic, Fc];
-        eXc = [eDc, eIc, eFc]
+    def psvc(self, lat, lon):
+        # only take grid points within 3 degrees of the site
+        near = distance(self.matriz[:,1], self.matriz[:,2], lat, lon) <= 3
+        sub = self.matriz[near]
+        if len(sub) == 0:
+            raise ValueError(f"The site ({lat}, {lon}) is outside the area "
+            f"of the regional model {self.name}")
+        
+        # columns of the file: D, I, F, eD, eI, eF
+        columns = [3, 4, 7, 5, 6, 8]
+        result = np.zeros((len(self.t), 6))
         for i, ti in enumerate(self.t):
-            y = self.matriz[self.matriz[:, 0] == ti, :]
-            y = y[distance(y[:, 1], y[:, 2], nlat, nlon) <= 3,
-                :]  # para hacer el calculo rapido elimino aquello + lejos de 3º
-            lat, lon = y[:, 1], y[:, 2]
-            D, I, F = y[:, 3], y[:, 4], y[:, 7]
-            eD, eI, eF = y[:, 5], y[:, 6], y[:, 8]
-            X = [D, I, F]
-            eX = [eD, eI, eF]
+            y = sub[sub[:, 0] == ti]
+            result[i] = griddata((y[:, 1], y[:, 2]), y[:, columns], (lat, lon), method='cubic')
+        if np.isnan(result).any():       
+            raise ValueError(f"The site ({lat}, {lon}) is outside the area "
+            f"of the regional model {self.name}")
 
-            for x, ex, xc, exc in zip(X, eX, Xc, eXc):
-                nx = griddata((lat, lon), x, (nlat, nlon), method='cubic')
-                nex = griddata((lat, lon), ex, (nlat, nlon), method='cubic')
-                xc[i] = nx
-                exc[i] = nex
-        return Dc, Ic, Fc, eDc / 1.96, eIc / 1.96, eFc / 1.96
+        D, I, F, eD, eI, eF = result.T
+        return D, I, F, eD / 1.96, eI / 1.96, eF / 1.96
 
 
 class Data:
@@ -422,7 +417,7 @@ class Curve:
 def distance(lat1, lon1, lat2, lon2):
     '''Distance between two points on sphere in degrees'''
     lat1, lon1, lat2, lon2 = radians(lat1), radians(lon1), radians(lat2), radians(lon2)
-    angular_distance = arccos(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) * cos(lon1 - lon2))
+    angular_distance = arccos(np.clip(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) * cos(lon1 - lon2), -1, 1))
     return degrees(angular_distance)
 
 
