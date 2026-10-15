@@ -518,7 +518,7 @@ def available_psvc():
                 ('regional', 'Regional Models')]
     for kind, title in sections:
         print(f'\n{title}:')
-        for name, c in reference_curves.items():
+        for name, c in catalog.items():
             if c['type'] != kind:
                 continue
             if kind == 'local':

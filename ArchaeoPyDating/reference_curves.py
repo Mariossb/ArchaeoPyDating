@@ -1,6 +1,6 @@
 '''Reference curves and models available in ArchaeoPyDating.
 
-Each entry of reference_curves describes one curve or model:
+Each entry of catalog describes one curve or model:
 
 - type: 'local', 'global' or 'regional'
 - local curves: file (in curves/local) and lat, lon of the curve
@@ -12,11 +12,11 @@ Each entry of reference_curves describes one curve or model:
 To add a curve: put its file(s) in the right folder and add one entry.
 '''
 
-__all__ = ['reference_curves', 'local_curves', 'global_models',
+__all__ = ['catalog', 'local_curves', 'global_models',
            'regional_models']
 
 
-reference_curves = {
+catalog = {
 
     # ---------------------------------------------------------- local curves
     'Iberia (Molina-Cardín et al. 2018)': {
@@ -131,9 +131,9 @@ reference_curves = {
 
 # Views by type, in the format used by Curve, Model and RegionalModel
 local_curves = {name: [c['lat'], c['lon'], c['file']]
-                for name, c in reference_curves.items() if c['type'] == 'local'}
+                for name, c in catalog.items() if c['type'] == 'local'}
 global_models = {name: c['files']
-                 for name, c in reference_curves.items() if c['type'] == 'global'}
+                 for name, c in catalog.items() if c['type'] == 'global'}
 regional_models = {name: c['file']
-                   for name, c in reference_curves.items() if c['type'] == 'regional'}
+                   for name, c in catalog.items() if c['type'] == 'regional'}
 
