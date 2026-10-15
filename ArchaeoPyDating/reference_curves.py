@@ -13,7 +13,7 @@ To add a curve: put its file(s) in the right folder and add one entry.
 '''
 
 __all__ = ['reference_curves', 'local_curves', 'global_models',
-           'regional_models', 'curves']
+           'regional_models']
 
 
 reference_curves = {
@@ -137,12 +137,3 @@ global_models = {name: c['files']
 regional_models = {name: c['file']
                    for name, c in reference_curves.items() if c['type'] == 'regional'}
 
-# Options of the online app (to be moved to the app)
-local_curves['New One'] = []
-
-curves = {
-    'Select one': [''],
-    'Local Curve': list(local_curves.keys()),
-    'Regional Model': list(regional_models.keys()),
-    'Global Model': list(global_models.keys()),
-}
