@@ -5,7 +5,6 @@ from scipy.interpolate import CubicSpline, griddata
 import shapefile
 from .reference_curves import *
 import os
-from pyshtools import legendre
 from functools import lru_cache
 
 __all__ = ['Curve', 'Data', 'Dating', 'Model', 'RegionalModel', 'available_psvc']
@@ -443,9 +442,7 @@ def frechet_basis(loc: np.ndarray,
     schmidt_p = np.zeros((len(loc), schmidt_total))
     schmidt_dp = np.zeros((len(loc), schmidt_total))
     for i, coord in enumerate(loc):
-        schmidt_p[i], schmidt_dp[i] = \
-            legendre.PlmSchmidt_d1(maxdegree, np.cos(coord[0]))
-        schmidt_dp[i] *= -np.sin(coord[0])
+        schmidt_p[i], schmidt_dp[i] = schmidt_legendre(maxdegree, coord[0])
     counter = 0
     # dx, dy, dz in separate rows to increase speed
     for n in range(1, maxdegree+1):
@@ -475,6 +472,28 @@ def frechet_basis(loc: np.ndarray,
             counter += 1
     # transpose to get frechet matrix
     return np.swapaxes(frechxyz, 0, 2)
+
+def schmidt_legendre(nmax, theta):
+    '''Schmidt semi-normalized associated Legendre functions P_n^m(cos theta)
+    and their derivatives with respect to theta, for 0 <= m <= n <= nmax.
+    Returned packed as in pyshtools: index n(n+1)/2 + m.'''
+    c, s = np.cos(theta), np.sin(theta)
+    P = np.zeros((nmax + 1, nmax + 1))
+    dP = np.zeros((nmax + 1, nmax + 1))
+    P[0, 0] = 1.0
+    for n in range(1, nmax + 1):
+        # diagonal term P_n^n from P_{n-1}^{n-1}
+        k = 1.0 if n == 1 else np.sqrt((2 * n - 1) / (2 * n))
+        P[n, n] = k * s * P[n - 1, n - 1]
+        dP[n, n] = k * (c * P[n - 1, n - 1] + s * dP[n - 1, n - 1])
+        # other orders m < n from degrees n-1 and n-2
+        for m in range(n):
+            a = (2 * n - 1) / np.sqrt(n * n - m * m)
+            b = np.sqrt(((n - 1) ** 2 - m * m) / (n * n - m * m))
+            P[n, m] = a * c * P[n - 1, m] - (b * P[n - 2, m] if n > 1 else 0.0)
+            dP[n, m] = a * (c * dP[n - 1, m] - s * P[n - 1, m]) - (b * dP[n - 2, m] if n > 1 else 0.0)
+    rows, cols = np.tril_indices(nmax + 1)
+    return P[rows, cols], dP[rows, cols]
 
 @lru_cache(maxsize=1)
 def coastlines():
