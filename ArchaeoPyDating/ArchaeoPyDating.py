@@ -249,7 +249,7 @@ class Dating:
         gsX = [gsD, gsI, gsF]
         for i, (gsXi) in enumerate(gsX):
             axX[i] = fig.add_subplot(gsXi[0])
-            plt.tick_params('x', labelbottom=False, direction='in')
+            axX[i].tick_params('x', labelbottom=False, direction='in')
             axfX[i] = fig.add_subplot(gsXi[1], sharex=axX[i])
 
         # ax of f comb
@@ -335,7 +335,7 @@ class Dating:
             axdat.text(0.5, 0.2, text, fontsize=20, fontweight='bold', ha='center')
         
         
-        plt.tight_layout()
+        fig.tight_layout()
         return fig
 
 
