@@ -180,6 +180,23 @@ class Dating:
         z = z / np.trapezoid(z, self.t)
         return z
 
+    def datingDI(self):
+        if self.dato.D is None or self.dato.I is None or self.dato.a95 is None:
+            raise ValueError("The data has no declination, inclination or a95")
+        if self.curva.D is None or self.curva.I is None:
+            raise ValueError("The curve has no declination and inclination")
+
+        kd = (140/self.dato.a95)**2
+        kc = 2/( np.radians(self.curva.eI)**2 + (np.radians(self.curva.eD) * np.cos(np.radians(self.curva.I))) ** 2) 
+
+        Id, Ic = np.radians(self.dato.I), np.radians(self.curva.I)
+        cos_theta = np.sin(Id) * np.sin(Ic) + np.cos(Id) * np.cos(Ic) * np.cos(np.radians(self.dato.D - self.curva.D))
+        R = np.sqrt(kd ** 2 + kc ** 2 + 2 * kd * kc * cos_theta)
+
+        logL = np.log(kc) - log_sinh(kc) + log_sinh(R) - np.log(R)
+        z = np.exp(logL - logL.max())
+        return z / np.trapezoid(z, self.t)
+
     def zcomb(self, *args):
         z = np.ones_like(self.t)
         for zi in args:
@@ -540,3 +557,7 @@ def available_psvc():
             if 'note' in c:
                 line += f" ({c['note']})"
             print(line)
+
+def log_sinh(x):
+    '''log(sinh(x)) for x>0, without overflow for latge x'''
+    return x + np.log1p(-np.exp(-2*x)) - np.log(2)
