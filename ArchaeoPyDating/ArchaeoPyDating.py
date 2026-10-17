@@ -35,13 +35,24 @@ class Model:
         F = np.sqrt(X ** 2 + Y ** 2 + Z ** 2)
         H = np.sqrt(X ** 2 + Y ** 2)
 
-        eXYZ = np.sqrt( np.dot( A**2,  self.ecoeff.T**2  ) )
-        eX, eY, eZ = eXYZ
+        eD, eI, eF = np.zeros(len(X)), np.zeros(len(X)), np.zeros(len(X))
+        for k in range(len(self.t)):
+            # covariance of X, Y, Z: A Sg A^T, with Sg the covariance of the
+            # coefficients. With only variances, Sg is diagonal and
+            # A Sg A^T = (A * variances) A^T
+            S = (A * self.ecoeff[k] ** 2) @ A.T
 
-        eD = np.degrees(  (1/H**2)*np.sqrt( (Y*eX)**2 + (X*eY)**2 )   )
-        eI = np.degrees(  (1/(F**2*H))*np.sqrt( (X*Z*eX)**2 + (Y*Z*eY)**2 + (H**2*eZ)**2 ) )
-        eF = (1/F)*np.sqrt( (X*eX)**2 + (Y*eY)**2 + (Z*eZ)**2 )
+            # jacobian of (D, I, F) with respect to (X, Y, Z); D and I in radians
+            x, y, z, f, h = X[k], Y[k], Z[k], F[k], H[k]
+            J = np.array([[-y / h**2,            x / h**2,            0       ],
+                          [-x * z / (h * f**2),  -y * z / (h * f**2), h / f**2],
+                          [x / f,                y / f,               z / f   ]])
 
+            # covariance of (D, I, F)
+            C = J @ S @ J.T
+            eD[k] = np.degrees(np.sqrt(C[0, 0]))
+            eI[k] = np.degrees(np.sqrt(C[1, 1]))
+            eF[k] = np.sqrt(C[2, 2])
         return D, I, F, eD, eI, eF
 
     def field_t(self, t, lat, lon):
