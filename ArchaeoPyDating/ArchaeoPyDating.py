@@ -123,6 +123,8 @@ class Data:
         Dn, In = cart2dir(x, y, z)
         self.D = Dn
         self.I = In
+        if self.eI is not None:
+            self.eD = self.eI / np.cos(np.radians(self.I))  #same a95 value, new inclination
 
     def vadm(self, nlat):
         # Translate the intensity data using the Virtual Axial Dipole Moment
