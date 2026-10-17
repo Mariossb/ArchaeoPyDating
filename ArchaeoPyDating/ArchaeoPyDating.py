@@ -2,6 +2,7 @@ import numpy as np
 from numpy import pi, cos, sin, tan, arctan, arccos, sqrt, exp, radians, degrees
 import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline, griddata
+from scipy.special import ive
 import shapefile
 from .reference_curves import *
 import os
@@ -206,6 +207,29 @@ class Dating:
 
         logL = np.log(kc) - log_sinh(kc) + log_sinh(R) - np.log(R)
         z = np.exp(logL - logL.max())
+        return z / np.trapezoid(z, self.t)
+
+    def datingI(self):
+        '''PDF of an inclination-only data with the marginal of the Fisher
+        distribution over the unknown declination (McFadden and Reid, 1982)'''
+        d, c = self.dato, self.curva
+        if d.I is None or d.a95 is None:
+            raise ValueError("The data has no inclination or a95")
+        if c.I is None:
+            raise ValueError("The curve has no inclination")
+
+        kd = (140 / d.a95) ** 2
+        kc = 1 / radians(c.eI) ** 2
+        k = 1 / (1 / kd + 1 / kc)
+
+        theta = radians(90 - d.I)
+        theta0 = radians(90 - c.I)
+        x = k * sin(theta0) * sin(theta)
+
+        # log of f; sin(theta) and the factor 2 are the same in every epoch.
+        # ive(0, x) = I0(x) exp(-x), so log I0(x) = log(ive(0, x)) + x
+        logL = np.log(k) - log_sinh(k) + k * cos(theta0) * cos(theta) + np.log(ive(0, x)) + x
+        z = exp(logL - logL.max())
         return z / np.trapezoid(z, self.t)
 
     def zcomb(self, *args):
