@@ -117,37 +117,17 @@ class Data:
     def cvp(self, nlat, nlon):
         if self.D is None or self.I is None:
             raise ValueError("cvp needs both declination and inclination")
-        # radians
-        lat, lon, D, I, nlat, nlon = radians([self.lat, self.lon, self.D, self.I, nlat, nlon])
-        self.Dold, self.Iold = np.degrees(D), np.degrees(I)
-        # from lat 2 colat
-        clat, nclat = pi / 2 - np.array([lat, nlat])
-        # dipolar coef
-        g10 = - (cos(D) * cos(I) * sin(clat) + 0.5 * sin(I) * cos(clat))
-        g11 = cos(D) * cos(I) * cos(clat) * cos(lon) + sin(D) * cos(I) * sin(lon) - 0.5 * sin(I) * sin(clat) * cos(lon)
-        h11 = - (-cos(D) * cos(I) * cos(clat) * sin(lon) + sin(D) * cos(I) * cos(lon) + 0.5 * sin(I) * sin(clat) * sin(
-            lon))
-        # comp. x,y,z at the new point
-        x = -g10 * sin(nclat) + cos(nclat) * (g11 * cos(nlon) + h11 * sin(nlon))
-        y = g11 * sin(nlon) - h11 * cos(nlon)
-        z = -2 * (g10 * cos(nclat) + sin(nclat) * (g11 * cos(nlon) + h11 * sin(nlon)))
-        # news D, I
-        Dn, In = cart2dir(x, y, z)
-        self.D = Dn
-        self.I = In
+        self.Dold, self.Iold = self.D, self.I
+        self.D, self.I = cvp_direction(self.D, self.I, self.lat, self.lon, nlat, nlon)
         if self.eI is not None:
-            self.eD = self.eI / np.cos(np.radians(self.I))  #same a95 value, new inclination
+            self.eD = self.eI / cos(radians(self.I))  # same a95 cone, new inclination
 
     def vadm(self, nlat):
         # Translate the intensity data using the Virtual Axial Dipole Moment
         if self.F is None:
             raise ValueError("vadm needs intensity")
-        lat, nlat = radians([self.lat, nlat])
-        # from lat 2 colat
-        clat, nclat = pi / 2 - np.array([lat, nlat])
-        Fn = self.F * sqrt((1 + 3 * cos(nclat) ** 2) / (1 + 3 * cos(clat) ** 2))
         self.Fold = self.F
-        self.F = Fn
+        self.F = vdm_intensity(self.F, self.Iold, self.I)
 
     def vdm(self):
         # Translate the intensity data using the Virtual Dipole Moment
@@ -155,11 +135,8 @@ class Data:
         # and only inclination in a new point
         if self.F is None or self.I is None or not hasattr(self, 'Iold'):
             raise ValueError("vdm needs intensity and inclination, relocated first with cvp")
-        I, In = radians(np.array([self.Iold, self.I]))
-        clat, nclat = arctan(2 / tan([I, In]))
-        Fn = self.F * sqrt((1 + 3 * cos(nclat) ** 2) / (1 + 3 * cos(clat) ** 2))
         self.Fold = self.F
-        self.F = Fn
+        self.F = vadm_intensity(self.F, self.lat, nlat)
 
 
 class Dating:
@@ -596,3 +573,34 @@ def available_psvc():
 def log_sinh(x):
     '''log(sinh(x)) for x>0, without overflow for latge x'''
     return x + np.log1p(-np.exp(-2*x)) - np.log(2)
+
+def cvp_direction(D, I, lat, lon, nlat, nlon):
+    '''Relocate directions (D, I) from (lat, lon) to (nlat, nlon) through the
+    virtual geomagnetic pole (CVP). D and I can be numbers or arrays.'''
+    D, I = radians(D), radians(I)
+    lat, lon, nlat, nlon = radians([lat, lon, nlat, nlon])
+    clat, nclat = pi / 2 - lat, pi / 2 - nlat
+    # dipolar coefficients
+    g10 = - (cos(D) * cos(I) * sin(clat) + 0.5 * sin(I) * cos(clat))
+    g11 = cos(D) * cos(I) * cos(clat) * cos(lon) + sin(D) * cos(I) * sin(lon) - 0.5 * sin(I) * sin(clat) * cos(lon)
+    h11 = - (-cos(D) * cos(I) * cos(clat) * sin(lon) + sin(D) * cos(I) * cos(lon) + 0.5 * sin(I) * sin(clat) * sin(lon))
+    # x, y, z at the new site
+    x = -g10 * sin(nclat) + cos(nclat) * (g11 * cos(nlon) + h11 * sin(nlon))
+    y = g11 * sin(nlon) - h11 * cos(nlon)
+    z = -2 * (g10 * cos(nclat) + sin(nclat) * (g11 * cos(nlon) + h11 * sin(nlon)))
+    return cart2dir(x, y, z)
+
+
+def vdm_intensity(F, I, nI):
+    '''Relocate intensities with the virtual dipole moment, from the site with
+    inclination I to the site with inclination nI.'''
+    clat = arctan(2 / tan(radians(I)))
+    nclat = arctan(2 / tan(radians(nI)))
+    return F * sqrt((1 + 3 * cos(nclat) ** 2) / (1 + 3 * cos(clat) ** 2))
+
+
+def vadm_intensity(F, lat, nlat):
+    '''Relocate intensities with the virtual axial dipole moment, from
+    latitude lat to latitude nlat.'''
+    clat, nclat = pi / 2 - radians(lat), pi / 2 - radians(nlat)
+    return F * sqrt((1 + 3 * cos(nclat) ** 2) / (1 + 3 * cos(clat) ** 2))
