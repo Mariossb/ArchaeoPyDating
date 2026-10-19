@@ -604,3 +604,23 @@ def vadm_intensity(F, lat, nlat):
     latitude lat to latitude nlat.'''
     clat, nclat = pi / 2 - radians(lat), pi / 2 - radians(nlat)
     return F * sqrt((1 + 3 * cos(nclat) ** 2) / (1 + 3 * cos(clat) ** 2))
+
+def relocation_bias(model, lat, lon, nlat, nlon):
+    '''Error of the dipolar relocation from (lat, lon) to (nlat, nlon),
+    predicted by a global model at each of its epochs:
+
+        bias = model at (nlat, nlon) - model at (lat, lon) relocated to (nlat, nlon)
+
+    with CVP for the direction and VDM for the intensity.
+    Returns the epochs of the model and the biases bD, bI, bF.'''
+    m = Model(model)
+    D0, I0, F0, *_ = m.psvc(lat, lon)
+    D1, I1, F1, *_ = m.psvc(nlat, nlon)
+
+    Dr, Ir = cvp_direction(D0, I0, lat, lon, nlat, nlon)
+    Fr = vdm_intensity(F0, I0, Ir)
+
+    bD = (D1 - Dr + 180) % 360 - 180   # angular difference
+    bI = I1 - Ir
+    bF = F1 - Fr
+    return m.t, bD, bI, bF
