@@ -193,16 +193,17 @@ class Dating:
         return z
 
     def datingDI(self):
-        if self.dato.D is None or self.dato.I is None or self.dato.a95 is None:
+        d, c = self.dato, self.curva
+        if d.D is None or d.I is None or d.a95 is None:
             raise ValueError("The data has no declination, inclination or a95")
-        if self.curva.D is None or self.curva.I is None:
+        if c.D is None or c.I is None:
             raise ValueError("The curve has no declination and inclination")
 
-        kd = (140/self.dato.a95)**2
-        kc = 2/( np.radians(self.curva.eI)**2 + (np.radians(self.curva.eD) * np.cos(np.radians(self.curva.I))) ** 2) 
+        kd = (140/d.a95)**2  #a95 in degrees, kd in (rad^-1)^2
+        kc = 2/( np.radians(c.eI)**2 + (np.radians(c.eD) * np.cos(np.radians(c.I))) ** 2) 
 
-        Id, Ic = np.radians(self.dato.I), np.radians(self.curva.I)
-        cos_theta = np.sin(Id) * np.sin(Ic) + np.cos(Id) * np.cos(Ic) * np.cos(np.radians(self.dato.D - self.curva.D))
+        Id, Ic = np.radians(d.I), np.radians(c.I)
+        cos_theta = np.sin(Id) * np.sin(Ic) + np.cos(Id) * np.cos(Ic) * np.cos(np.radians(d.D - c.D))
         R = np.sqrt(kd ** 2 + kc ** 2 + 2 * kd * kc * cos_theta)
 
         logL = np.log(kc) - log_sinh(kc) + log_sinh(R) - np.log(R)
@@ -218,8 +219,8 @@ class Dating:
         if c.I is None:
             raise ValueError("The curve has no inclination")
 
-        kd = (140 / d.a95) ** 2
-        kc = 1 / radians(c.eI) ** 2
+        kd = (140 / d.a95) ** 2 #a95 in degrees, kd in (rad^-1)^2
+        kc = 2/( np.radians(c.eI)**2 + (np.radians(c.eD) * np.cos(np.radians(c.I))) ** 2) 
         k = 1 / (1 / kd + 1 / kc)
 
         theta = radians(90 - d.I)
